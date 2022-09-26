@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Alphaolomi\Azampay\AzampayService bankCheckout(array $payload)
  *
  * @author Alpha Olomi
- * 
+ *
  * @see \Alphaolomi\Azampay\Azampay
  */
 class Azampay extends Facade

@@ -16,14 +16,19 @@ class AzampayService
     use CanSendGetRequest;
     use CanSendPostRequest;
 
+    const SANDBOX_AUTH_BASE_URL = 'https://authenticator-sandbox.azampay.co.tz';
 
-    const SANDBOX_AUTH_BASE_URL = "https://authenticator-sandbox.azampay.co.tz";
-    const SANDBOX_BASE_URL = "https://sandbox.azampay.co.tz";
+    const SANDBOX_BASE_URL = 'https://sandbox.azampay.co.tz';
+
     const AUTH_BASE_URL = '';
+
     const BASE_URL = '';
-    const SUPPORTED_MNO = ["Airtel", "Tigo", "Halopesa", "Azampesa"];
-    const SUPPORTED_BANK = ["CRDB", "NMB"];
-    const SUPPORTED_CURRENCY = ["TZS"];
+
+    const SUPPORTED_MNO = ['Airtel', 'Tigo', 'Halopesa', 'Azampesa'];
+
+    const SUPPORTED_BANK = ['CRDB', 'NMB'];
+
+    const SUPPORTED_CURRENCY = ['TZS'];
 
     // appName
     // clientId
@@ -31,14 +36,16 @@ class AzampayService
     // environment
 
     private $baseUrl;
+
     private $authBaseUrl;
+
     private $apiKey;
 
     public function __construct(
         private array $options = []
     ) {
-    foreach (['appName', 'clientId', 'clientSecret'] as $key) {
-            if (!isset($this->options[$key]) || empty($this->options[$key])) {
+        foreach (['appName', 'clientId', 'clientSecret'] as $key) {
+            if (! isset($this->options[$key]) || empty($this->options[$key])) {
                 throw new \InvalidArgumentException("Missing required option: $key");
             }
         }
@@ -48,8 +55,6 @@ class AzampayService
         $this->baseUrl = $this->options['environment'] === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
         $this->authBaseUrl = $this->options['environment'] === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
     }
-
-
 
     /**
      * Generate Token
@@ -62,7 +67,7 @@ class AzampayService
     {
         return $this->get(
             request: Http::baseUrl(url: $this->authBaseUrl), // FIXME: bad code
-            url: "/AppRegistration/GenerateToken",
+            url: '/AppRegistration/GenerateToken',
         )->onError(function (Response $response) {
             if ($response->status() === 423) {
                 throw new \Exception('Provided detail is not valid for this app or secret key has been expired');
@@ -71,7 +76,6 @@ class AzampayService
         // accessToken
         // expire
     }
-
 
     // "accountNumber": "string",
     // "additionalProperties": {
@@ -87,7 +91,7 @@ class AzampayService
         // azampay/mno/checkout
         return $this->post(
             request: $this->service->buildRequestWithToken(),
-            url: "/azampay/mno/checkout",
+            url: '/azampay/mno/checkout',
             payload: $data
         )->onError(function (Response $response) {
             // if ($response->status() === 400) {
@@ -95,8 +99,6 @@ class AzampayService
             // }
         })->json();
     }
-
-
 
     // "additionalProperties": {
     //     "property1": null,
@@ -115,7 +117,7 @@ class AzampayService
         // azampay/bank/checkout
         return $this->post(
             request: $this->service->buildRequestWithToken(),
-            url: "/azampay/mno/checkout",
+            url: '/azampay/mno/checkout',
             payload: $data
         )->onError(function (Response $response) {
             // if ($response->status() === 400) {

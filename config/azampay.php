@@ -2,7 +2,6 @@
 
 /**
  * Config for Azampay
- *
  */
 return [
 
