@@ -60,8 +60,6 @@ class AzampayService
      * Generate Token
      *
      * Generate the access token in order to access Azampay public end points.
-     *
-     * @return array
      */
     public function generateToken(): array
     {
