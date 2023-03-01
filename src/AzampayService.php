@@ -361,8 +361,8 @@ class AzampayService
      */
     private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
     {
-        return Http::withHeaders([
-            'Authorization' => $this->apiKey,
+        return Http::withToken($this->token)
+            ->withHeaders([
             'Content-Type' => 'application/json',
         ])->$method($this->baseUrl.$uri, $data);
     }
