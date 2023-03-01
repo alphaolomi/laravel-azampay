@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="/art/azampay-logo.png" width="300" title="Azampay Logo" alt="Azampay Logo">
+</p>
+
 <div align="center"><h1>Laravel Azampay</h1><a href="https://packagist.org/packages/alphaolomi/laravel-azampay">
 <img src="https://img.shields.io/packagist/v/alphaolomi/laravel-azampay.svg?style=flat-square" alt="Latest Version on Packagist">
 </a><a href="https://github.com/alphaolomi/laravel-azampay/actions?query=workflow%3Arun-tests+branch%3Amain">
