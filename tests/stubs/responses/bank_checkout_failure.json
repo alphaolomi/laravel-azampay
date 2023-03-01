@@ -1,0 +1,12 @@
+{
+    "errors": {
+        "amount": [],
+        "externalId": [],
+        "accountNumber": [],
+        "provider": []
+    },
+    "type": "string",
+    "traceId": "string",
+    "title": "string",
+    "status": 0
+}

@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace Alphaolomi\Azampay;
 
-use AlphaOlomi\Azampay\Concerns\BuildBaseRequest;
-use AlphaOlomi\Azampay\Concerns\CanSendGetRequest;
-use AlphaOlomi\Azampay\Concerns\CanSendPostRequest;
+use Alphaolomi\Azampay\Concerns\BuildBaseRequest;
+use Alphaolomi\Azampay\Concerns\CanSendGetRequest;
+use Alphaolomi\Azampay\Concerns\CanSendPostRequest;
+use Alphaolomi\Azampay\Traits\InputValidation;
+use Exception;
 use Illuminate\Http\Client\Response;
+use \Illuminate\Http\Response as HTTPResponse;
 use Illuminate\Support\Facades\Http;
 
 class AzampayService
 {
-    use BuildBaseRequest;
-    use CanSendGetRequest;
-    use CanSendPostRequest;
+    use InputValidation;
 
     const SANDBOX_AUTH_BASE_URL = 'https://authenticator-sandbox.azampay.co.tz';
 
     const SANDBOX_BASE_URL = 'https://sandbox.azampay.co.tz';
 
-    const AUTH_BASE_URL = '';
+    const AUTH_BASE_URL = 'https://authenticator.azampay.co.tz';
 
-    const BASE_URL = '';
+    const BASE_URL = 'https://checkout.azampay.co.tz';
 
     const SUPPORTED_MNO = ['Airtel', 'Tigo', 'Halopesa', 'Azampesa'];
 
@@ -41,38 +42,56 @@ class AzampayService
 
     private $apiKey;
 
-    public function __construct(
-        private array $options = []
-    ) {
-        foreach (['appName', 'clientId', 'clientSecret'] as $key) {
-            if (! isset($this->options[$key]) || empty($this->options[$key])) {
-                throw new \InvalidArgumentException("Missing required option: $key");
-            }
+    /**
+     * @throws Exception
+     */
+    public function __construct() {
+
+        if (empty(config('azampay.appName'))) {
+            throw new \InvalidArgumentException("Missing required option: appName");
         }
 
-        $this->options['environment'] = $this->options['environment'] ?? 'sandbox';
+        if (empty(config('azampay.clientId'))) {
+            throw new \InvalidArgumentException("Missing required option: clientId");
+        }
 
-        $this->baseUrl = $this->options['environment'] === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
-        $this->authBaseUrl = $this->options['environment'] === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
+        if (empty(config('azampay.clientSecret'))) {
+            throw new \InvalidArgumentException("Missing required option: clientSecret");
+        }
+
+        $this->baseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
+        $this->authBaseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
+
+        $this->generateToken();
     }
 
     /**
      * Generate Token
      *
      * Generate the access token in order to access Azampay public end points.
+     * @throws Exception
      */
     public function generateToken(): array
     {
-        return $this->get(
-            request: Http::baseUrl(url: $this->authBaseUrl), // FIXME: bad code
-            url: '/AppRegistration/GenerateToken',
-        )->onError(function (Response $response) {
-            if ($response->status() === 423) {
-                throw new \Exception('Provided detail is not valid for this app or secret key has been expired');
-            }
-        })->json('data');
-        // accessToken
-        // expire
+        $response = Http::post($this->authBaseUrl.'/AppRegistration/GenerateToken',
+                    [
+                        'appName' => config('azampay.appName'),
+                        'clientId' => config('azampay.clientId'),
+                        'clientSecret' => config('azampay.clientSecret')
+                    ])->onError(function (Response $response) {
+                             if ($response->status() === HTTPResponse::HTTP_LOCKED) {
+                                 throw new Exception('Provided detail is not valid for this app or secret key has been expired');
+                             }
+
+                             if($response->serverError()) {
+                                 throw new Exception('There is a problem with payment processing server.');
+                             }
+                        });
+
+        $this->apiKey = $response->json('data')['accessToken']['type'];
+
+        return $response->json();
+
     }
 
     // "accountNumber": "string",
@@ -84,18 +103,25 @@ class AzampayService
     // "currency": "string",
     // "externalId": "string",
     // "provider": "Airtel"
+    /**
+     * @throws Exception
+     */
     public function mobileCheckout(array $data)
     {
-        // azampay/mno/checkout
-        return $this->post(
-            request: $this->service->buildRequestWithToken(),
-            url: '/azampay/mno/checkout',
-            payload: $data
-        )->onError(function (Response $response) {
-            // if ($response->status() === 400) {
-            throw new \RuntimeException($response->body());
-            // }
-        })->json();
+        $this->validateMNOCheckoutInput($data);
+
+        $response = $this->sendRequest('post', '/azampay/mno/checkout', $data)
+                    ->onError(function (Response $response) {
+                        if ($response->badRequest()) {
+                            throw new \RuntimeException($response->body());
+                        }
+
+                        if($response->serverError()) {
+                            throw new Exception('There is a problem with payment processing server.');
+                        }
+                    });
+
+        return $response->json();
     }
 
     // "additionalProperties": {
@@ -112,15 +138,98 @@ class AzampayService
     //     "referenceId": "string"
     public function bankCheckout(array $data)
     {
-        // azampay/bank/checkout
-        return $this->post(
-            request: $this->service->buildRequestWithToken(),
-            url: '/azampay/mno/checkout',
-            payload: $data
-        )->onError(function (Response $response) {
-            // if ($response->status() === 400) {
-            throw new \RuntimeException($response->body());
-            // }
-        })->json();
+
+        $this->validateBankCheckoutInput($data);
+
+       $response = $this->sendRequest('post', '/azampay/bank/checkout', $data)
+                    ->onError(function (Response $response) {
+                         if ($response->badRequest()) {
+                            throw new \RuntimeException($response->body());
+                         }
+
+                        if($response->serverError()) {
+                            throw new Exception('There is a problem with payment processing server.');
+                        }
+                    });
+
+       return $response->json();
     }
+
+    public function getPaymentPartners(){
+        $response = $this->sendRequest('get', '/api/v1/Partner/GetPaymentPartners', [])
+            ->onError(function (Response $response) {
+                if ($response->badRequest()) {
+                    throw new \RuntimeException($response->body());
+                }
+
+                if($response->serverError()) {
+                    throw new Exception('There is a problem with payment processing server.');
+                }
+            });
+
+        return $response->json();
+    }
+
+    public function postCheckout(array $data)
+    {
+        $this->validatePostCheckoutInput($data);
+
+        $response = $this->sendRequest('post', '/api/v1/Partner/PostCheckout', $data);
+
+        return $response->json();
+    }
+
+    public function createTransfer(array $data)
+    {
+        $response = $this->sendDisbursementRequest('post', '/azampay/createtransfer', $data)
+            ->onError(function (Response $response) {
+                if ($response->unauthorized()) {
+                    throw new \RuntimeException($response->body());
+                }
+            });
+
+        return $response->json();
+    }
+
+    public function nameLookup(array $data)
+    {
+        $response = $this->sendDisbursementRequest('post', '/azampay/namelookup', $data)
+            ->onError(function (Response $response) {
+                if ($response->unauthorized()) {
+                    throw new \RuntimeException($response->body());
+                }
+            });
+
+        return $response->json();
+    }
+
+
+    public function getTransactionStatus(?array $data = null)
+    {
+        $response = $this->sendDisbursementRequest('get', '/azampay/gettransactionstatus', $data)
+            ->onError(function (Response $response) {
+                if ($response->unauthorized()) {
+                    throw new \RuntimeException($response->body());
+                }
+            });
+
+        return $response->json();
+    }
+
+    private function sendRequest(string $method, string $uri, array $data)
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $this->apiKey,
+            'Content-Type' => 'application/json'
+        ])->$method($this->baseUrl. $uri, $data);
+    }
+
+    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null)
+    {
+        return Http::withHeaders([
+                    'Authorization' => $this->apiKey,
+                    'Content-Type' => 'application/json'
+                ])->$method($this->baseUrl. $uri, $data);
+    }
+
 }

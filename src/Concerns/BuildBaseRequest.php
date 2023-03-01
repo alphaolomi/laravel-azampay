@@ -17,7 +17,7 @@ trait BuildBaseRequest
             ->asJson()
             ->acceptJson()
             // ->withToken($this->options['token']);
-            ->withHeaders(headers: ['X-API-Key' => "{$this->apiToken}"]); // testing only
+            ->withHeaders(headers: ['X-API-Key' => "{$this->apiKey}"]); // testing only
     }
 
     public function buildRequest(): PendingRequest

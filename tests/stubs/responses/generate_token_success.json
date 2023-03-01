@@ -1,0 +1,13 @@
+{
+    "data": {
+        "accessToken": {
+            "type": "object"
+        },
+        "expire": {
+            "type": "object"
+        }
+    },
+    "message": "Token generated successfully",
+    "success": true,
+    "statusCode": 200
+}
