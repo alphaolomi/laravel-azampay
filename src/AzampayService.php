@@ -34,6 +34,8 @@ class AzampayService
 
     private string $apiKey;
 
+    private string $token;
+
     /**
      * @throws Exception
      */
@@ -66,22 +68,24 @@ class AzampayService
      */
     public function generateToken(): void
     {
-        $response = Http::post($this->authBaseUrl.'/AppRegistration/GenerateToken',
+        $response = Http::post(
+            $this->authBaseUrl . '/AppRegistration/GenerateToken',
             [
                 'appName' => config('azampay.appName'),
                 'clientId' => config('azampay.clientId'),
                 'clientSecret' => config('azampay.clientSecret'),
-            ])->onError(function (Response $response) {
-                if ($response->status() === HTTPResponse::HTTP_LOCKED) {
-                    throw new Exception('Provided detail is not valid for this app or secret key has been expired');
-                }
+            ]
+        )->onError(function (Response $response) {
+            if ($response->status() === HTTPResponse::HTTP_LOCKED) {
+                throw new Exception('Provided detail is not valid for this app or secret key has been expired');
+            }
 
-                if ($response->serverError()) {
-                    throw new Exception('There is a problem with payment processing server.');
-                }
-            });
+            if ($response->serverError()) {
+                throw new Exception('There is a problem with payment processing server.');
+            }
+        });
 
-        $this->apiKey = $response->json('data')['accessToken']['type'];
+        $this->token = $response->json('data')['accessToken'];
     }
 
     /**
@@ -110,15 +114,15 @@ class AzampayService
         $this->validateMNOCheckoutInput($data);
 
         $response = $this->sendRequest('post', '/azampay/mno/checkout', $data)
-                    ->onError(function (Response $response) {
-                        if ($response->badRequest()) {
-                            throw new \RuntimeException($response->body());
-                        }
+            ->onError(function (Response $response) {
+                if ($response->badRequest()) {
+                    throw new \RuntimeException($response->body());
+                }
 
-                        if ($response->serverError()) {
-                            throw new Exception('There is a problem with payment processing server.');
-                        }
-                    });
+                if ($response->serverError()) {
+                    throw new Exception('There is a problem with payment processing server.');
+                }
+            });
 
         return $response->json();
     }
@@ -153,15 +157,15 @@ class AzampayService
         $this->validateBankCheckoutInput($data);
 
         $response = $this->sendRequest('post', '/azampay/bank/checkout', $data)
-                     ->onError(function (Response $response) {
-                         if ($response->badRequest()) {
-                             throw new \RuntimeException($response->body());
-                         }
+            ->onError(function (Response $response) {
+                if ($response->badRequest()) {
+                    throw new \RuntimeException($response->body());
+                }
 
-                         if ($response->serverError()) {
-                             throw new Exception('There is a problem with payment processing server.');
-                         }
-                     });
+                if ($response->serverError()) {
+                    throw new Exception('There is a problem with payment processing server.');
+                }
+            });
 
         return $response->json();
     }
@@ -346,10 +350,10 @@ class AzampayService
      */
     private function sendRequest(string $method, string $uri, array $data): Response
     {
-        return Http::withHeaders([
-            'X-API-KEY' => $this->apiKey,
-            'Content-Type' => 'application/json',
-        ])->$method($this->baseUrl.$uri, $data);
+        return Http::withToken($this->token)
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+            ])->$method($this->baseUrl . $uri, $data);
     }
 
     /**
@@ -360,6 +364,6 @@ class AzampayService
         return Http::withHeaders([
             'Authorization' => $this->apiKey,
             'Content-Type' => 'application/json',
-        ])->$method($this->baseUrl.$uri, $data);
+        ])->$method($this->baseUrl . $uri, $data);
     }
 }
