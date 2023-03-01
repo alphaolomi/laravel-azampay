@@ -1,0 +1,14 @@
+{
+    "additionalProperties": {
+        "property1": null,
+        "property2": null
+    },
+    "msisdn": "string",
+    "amount": "string",
+    "message": "string",
+    "utilityref": "string",
+    "operator": "Airtel",
+    "reference": "string",
+    "transactionstatus": "string",
+    "submerchantAcc": "string"
+}

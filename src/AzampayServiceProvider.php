@@ -16,18 +16,14 @@ class AzampayServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-azampay')
+            ->hasRoute('azampay_api')
             ->hasConfigFile();
     }
 
     public function packageRegistered()
     {
         $this->app->bind('azampay', function () {
-            return new AzampayService([
-                'appName' => config('azampay.appName'),
-                'clientId' => config('azampay.clientId'),
-                'clientSecret' => config('azampay.clientSecret'),
-                'environment' => config('azampay.environment'),
-            ]);
+            return new AzampayService();
         });
     }
 }

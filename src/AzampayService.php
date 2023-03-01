@@ -31,16 +31,11 @@ class AzampayService
 
     const SUPPORTED_CURRENCY = ['TZS'];
 
-    // appName
-    // clientId
-    // clientSecret
-    // environment
+    private string $baseUrl;
 
-    private $baseUrl;
+    private string $authBaseUrl;
 
-    private $authBaseUrl;
-
-    private $apiKey;
+    private string $apiKey;
 
     /**
      * @throws Exception
@@ -71,7 +66,7 @@ class AzampayService
      * Generate the access token in order to access Azampay public end points.
      * @throws Exception
      */
-    public function generateToken(): array
+    public function generateToken(): void
     {
         $response = Http::post($this->authBaseUrl.'/AppRegistration/GenerateToken',
                     [
@@ -89,24 +84,31 @@ class AzampayService
                         });
 
         $this->apiKey = $response->json('data')['accessToken']['type'];
-
-        return $response->json();
-
     }
 
-    // "accountNumber": "string",
-    // "additionalProperties": {
-    // "property1": null,
-    // "property2": null
-    // },
-    // "amount": "string",
-    // "currency": "string",
-    // "externalId": "string",
-    // "provider": "Airtel"
+
     /**
+     * Perform mobile checkout via Azam pay
+     *
+     * @param array {
+     *  accountNumber: string,
+     *  additionalProperties: {
+     *  property1: null,
+     *  property2: null
+     *   },
+     *  amount: string,
+     *  currency: string,
+     *  externalId: string,
+     *  provider: Airtel | Tigo | Mpesa | Azampesa | Halopesa
+     * }
+     *
+     * @return array|null {
+     *   transactionId: string,
+     *   message: string
+     * }|null
      * @throws Exception
      */
-    public function mobileCheckout(array $data)
+    public function mobileCheckout(array $data): ?array
     {
         $this->validateMNOCheckoutInput($data);
 
@@ -124,19 +126,32 @@ class AzampayService
         return $response->json();
     }
 
-    // "additionalProperties": {
-    //     "property1": null,
-    //     "property2": null
-    //     },
-    //     "amount": "string",
-    //     "currencyCode": "string",
-    //     "merchantAccountNumber": "string",
-    //     "merchantMobileNumber": "string",
-    //     "merchantName": "string",
-    //     "otp": "string",
-    //     "provider": "CRDB",
-    //     "referenceId": "string"
-    public function bankCheckout(array $data)
+    /**
+     * Perform bank checkout via Azam pay
+     *
+     * @param array {
+     *
+     *   additionalProperties: {
+     *   property1: null,
+     *   property2: null
+     *   },
+     *   amount: string,
+     *   currencyCode: string,
+     *   merchantAccountNumber: string,
+     *   merchantMobileNumber: string,
+     *   merchantName: string,
+     *   otp: string,
+     *   provider: CRDB | NMB,
+     *   referenceId: string
+     * }
+     *
+     * @return array|null {
+     *   transactionId: string,
+     *   message: string
+     * }|null
+     * @throws Exception
+     */
+    public function bankCheckout(array $data):?array
     {
 
         $this->validateBankCheckoutInput($data);
@@ -155,7 +170,26 @@ class AzampayService
        return $response->json();
     }
 
-    public function getPaymentPartners(){
+    /**
+     * Get payment partners via Azam pay
+     *
+     * @return array|null {
+     *   [
+     *       {
+     *       logoUrl: string,
+     *       partnerName: string,
+     *       provider: 0,
+     *       vendorName: string",
+     *       paymentVendorId: string,
+     *       paymentPartnerId: string,
+     *       currency: string
+     *       }
+     *   ]
+     * }|null
+     * @throws Exception
+     */
+    public function getPaymentPartners(): ?array
+    {
         $response = $this->sendRequest('get', '/api/v1/Partner/GetPaymentPartners', [])
             ->onError(function (Response $response) {
                 if ($response->badRequest()) {
@@ -170,16 +204,80 @@ class AzampayService
         return $response->json();
     }
 
-    public function postCheckout(array $data)
+    /**
+     * Perform post checkout via Azam pay
+     *
+     * @param array {
+     *   appName: string,
+     *   clientId: string,
+     *   vendorId: e9b57fab-1850-44d4-8499-71fd15c845a0,
+     *   language: string,
+     *   currency: string,
+     *   externalId: string,
+     *   requestOrigin: string,
+     *   redirectFailURL: string,
+     *   redirectSuccessURL: string,
+     *   vendorName: string,
+     *   amount: string",
+     *   cart: {
+     *       items: [
+     *           {
+     *           name: string
+     *           }
+     *       ]
+     *   }
+     *
+     * }
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function postCheckout(array $data): string
     {
         $this->validatePostCheckoutInput($data);
 
         $response = $this->sendRequest('post', '/api/v1/Partner/PostCheckout', $data);
 
-        return $response->json();
+        return $response->body();
     }
 
-    public function createTransfer(array $data)
+    /**
+     * Perform bank checkout via Azam pay
+     *
+     * @param array {
+     *
+     *   source : {
+     *      countryCode: string,
+     *      fullName: string,
+     *      bankName: string,
+     *      accountNumber: string,
+     *      currency: string
+     *   },
+     *   destination: {
+     *      countryCode: string,
+     *      fullName: string,
+     *      bankName: string,
+     *      accountNumber: string,
+     *      currency: string
+     *   },
+     *   transferDetails: {
+     *      type: string,
+     *      amount: 0,
+     *      date: string
+     *   },
+     *   externalReferenceId: string,
+     *   remarks: string
+     * }
+     *
+     * @return array|null {
+     *   data: Transaction successful.,
+     *   message: Request successful.,
+     *   success: true,
+     *   statusCode: 200
+     * }|null
+     * @throws Exception
+     */
+    public function createTransfer(array $data): ?array
     {
         $response = $this->sendDisbursementRequest('post', '/azampay/createtransfer', $data)
             ->onError(function (Response $response) {
@@ -191,7 +289,24 @@ class AzampayService
         return $response->json();
     }
 
-    public function nameLookup(array $data)
+    /**
+     * Perform name lookup via Azam pay
+     *
+     * @param array {
+     *   bankName: string,
+     *   accountNumber: string
+     * }
+     *
+     * @return array|null {
+     *   name: string,
+     *   message: string,
+     *   success: true,
+     *   accountNumber: string,
+     *   bankName: string
+     * }|null
+     * @throws Exception
+     */
+    public function nameLookup(array $data): ?array
     {
         $response = $this->sendDisbursementRequest('post', '/azampay/namelookup', $data)
             ->onError(function (Response $response) {
@@ -203,8 +318,23 @@ class AzampayService
         return $response->json();
     }
 
-
-    public function getTransactionStatus(?array $data = null)
+    /**
+     * Perform bank checkout via Azam pay
+     *
+     * @param array | null {
+     *
+     *   bankName: CRDB | NMB, pgReferenceId: string
+     * }
+     *
+     * @return array|null {
+     *   data: Transaction successful.,
+     *   message: Request successful.,
+     *   success: true,
+     *   statusCode": 200
+     * }|null
+     * @throws Exception
+     */
+    public function getTransactionStatus(?array $data = null): ?array
     {
         $response = $this->sendDisbursementRequest('get', '/azampay/gettransactionstatus', $data)
             ->onError(function (Response $response) {
@@ -216,7 +346,15 @@ class AzampayService
         return $response->json();
     }
 
-    private function sendRequest(string $method, string $uri, array $data)
+    /**
+     * Prepare request to be sent to Azam pay
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array $data
+     * @return Response
+     */
+    private function sendRequest(string $method, string $uri, array $data): Response
     {
         return Http::withHeaders([
             'X-API-KEY' => $this->apiKey,
@@ -224,7 +362,14 @@ class AzampayService
         ])->$method($this->baseUrl. $uri, $data);
     }
 
-    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null)
+    /**
+     * Prepare disbursement request to be sent to Azam pay
+     * @param string $method
+     * @param string $uri
+     * @param array|null $data
+     * @return Response
+     */
+    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
     {
         return Http::withHeaders([
                     'Authorization' => $this->apiKey,

@@ -2,7 +2,10 @@
 
 
 use Alphaolomi\Azampay\AzampayService;
+use Alphaolomi\Azampay\Events\AzampayCallback;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use function Pest\Laravel\post;
 
 beforeEach(function () {
     $auth_stub = json_decode(
@@ -114,7 +117,7 @@ it('can create transfer successful', function(){
         'transferDetails' => [
             'type' => 'string',
             'amount' => 0,
-            'date' => '2019-08-24T14 =>15 =>22Z'
+            'date' => '2019-08-24T141522Z'
         ],
         'externalReferenceId' => 'string',
         'remarks' => 'string'
@@ -151,8 +154,8 @@ it('can get transaction status successful', function(){
     );
 
     Http::fake([
-        AzampayService::BASE_URL.'/azampay/gettransactionstatus' => Http::response($stub, 200),
-        AzampayService::SANDBOX_BASE_URL.'/azampay/gettransactionstatus' => Http::response($stub, 200),
+        AzampayService::BASE_URL.'/azampay/gettransactionstatus?*' => Http::response($stub, 200),
+        AzampayService::SANDBOX_BASE_URL.'/azampay/gettransactionstatus?*' => Http::response($stub, 200),
     ]);
 
     $azampay = new AzampayService();
@@ -160,4 +163,19 @@ it('can get transaction status successful', function(){
     $data = $azampay->getTransactionStatus(['bankName' => 'CRDB', 'pgReferenceId' => 'omakei']);
 
     $this->assertEquals($data, $stub);
+});
+
+it('can receive callback and dispatch azampay callback event', function(){
+    $stub = json_decode(
+        file_get_contents(__DIR__ . '/stubs/responses/callback.json'),
+        true
+    );
+    Event::fake([
+        AzampayCallback::class,
+    ]);
+
+    post(route('checkout_payment_callback'), $stub)->assertStatus(200);
+
+    Event::assertDispatched(AzampayCallback::class);
+
 });

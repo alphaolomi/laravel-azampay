@@ -17,7 +17,9 @@ beforeEach(function () {
 
 });
 
-it('can successful and send mobile checkout request', function(){
+it(/**
+ * @throws Exception
+ */ 'can successful and send mobile checkout request', function(){
     $stub = json_decode(
         file_get_contents(__DIR__ . '/stubs/responses/bank_checkout_success.json'),
         true
@@ -35,7 +37,7 @@ it('can successful and send mobile checkout request', function(){
         'currency' => 'TZS',
         'accountNumber' => '0625933171',
         'externalId' => '08012345678',
-        'provider' => 'halotel',
+        'provider' => 'Mpesa',
     ]);
 
     $this->assertEquals($data, $stub);
@@ -60,7 +62,7 @@ it('can throw exception if mobile checkout request return error', function(){
         'currency' => 'TZS',
         'accountNumber' => '0625933171',
         'externalId' => '08012345678',
-        'provider' => 'halotel',
+        'provider' => 'Mpesa',
     ]);
 
     $this->assertEquals($data, $stub);

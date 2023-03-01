@@ -19,6 +19,6 @@ class Azampay extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \Alphaolomi\Azampay\Azampay::class;
+        return \Alphaolomi\Azampay\AzampayService::class;
     }
 }
