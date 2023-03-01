@@ -363,7 +363,7 @@ class AzampayService
     {
         return Http::withToken($this->token)
             ->withHeaders([
-            'Content-Type' => 'application/json',
-        ])->$method($this->baseUrl.$uri, $data);
+                'Content-Type' => 'application/json',
+            ])->$method($this->baseUrl.$uri, $data);
     }
 }
