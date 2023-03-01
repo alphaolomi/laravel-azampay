@@ -1,0 +1,10 @@
+site_name: Laravel Azampay
+site_description: 'Laravel integration for Azampay payment gateway'
+site_author: 'Alpha Olomi'
+docs_dir: docs/
+repo_name: 'alphaolomi/laravel-azampay'
+repo_url: 'https://github.com/alphaolomi/laravel-azampay'
+nav:
+    - Home: index.md
+theme:
+  name: 'material'
