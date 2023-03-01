@@ -23,7 +23,7 @@ return [
     | This value is the client ID of your application as registered on Azampay.
     |
     */
-    'clientId' => env('AZAMPAY_CLIENT_ID'),
+    'clientId' => env('AZAMPAY_CLIENT_ID', 'Azampay'),
 
     /*
     |--------------------------------------------------------------------------
@@ -33,7 +33,7 @@ return [
     | This value is the client secret of your application as registered on Azampay.
     |
     */
-    'clientSecret' => env('AZAMPAY_CLIENT_SECRET'),
+    'clientSecret' => env('AZAMPAY_CLIENT_SECRET', 'Azampay'),
 
     /*
     |--------------------------------------------------------------------------
