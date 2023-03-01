@@ -15,9 +15,7 @@ beforeEach(function () {
     ]);
 });
 
-it(/**
- * @throws Exception
- */ 'can successful and send mobile checkout request', function () {
+it('can successful and send mobile checkout request', function () {
     $stub = json_decode(
         file_get_contents(__DIR__.'/stubs/responses/bank_checkout_success.json'),
         true
