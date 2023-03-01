@@ -69,7 +69,7 @@ class AzampayService
     public function generateToken(): void
     {
         $response = Http::post(
-            $this->authBaseUrl . '/AppRegistration/GenerateToken',
+            $this->authBaseUrl.'/AppRegistration/GenerateToken',
             [
                 'appName' => config('azampay.appName'),
                 'clientId' => config('azampay.clientId'),
@@ -353,7 +353,7 @@ class AzampayService
         return Http::withToken($this->token)
             ->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->$method($this->baseUrl . $uri, $data);
+            ])->$method($this->baseUrl.$uri, $data);
     }
 
     /**
@@ -364,6 +364,6 @@ class AzampayService
         return Http::withHeaders([
             'Authorization' => $this->apiKey,
             'Content-Type' => 'application/json',
-        ])->$method($this->baseUrl . $uri, $data);
+        ])->$method($this->baseUrl.$uri, $data);
     }
 }
