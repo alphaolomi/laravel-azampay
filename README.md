@@ -1,16 +1,24 @@
 <p align="center">
     <img src="/art/azampay-logo.png" width="300" title="Azampay Logo" alt="Azampay Logo">
 </p>
-
 <div align="center"><h1>Laravel Azampay</h1><a href="https://packagist.org/packages/alphaolomi/laravel-azampay">
-<img src="https://img.shields.io/packagist/v/alphaolomi/laravel-azampay.svg?style=flat-square" alt="Latest Version on Packagist">
-</a><a href="https://github.com/alphaolomi/laravel-azampay/actions?query=workflow%3Arun-tests+branch%3Amain">
-<img src="https://img.shields.io/github/workflow/status/alphaolomi/laravel-azampay/run-tests?label=tests" alt="GitHub Tests Action Status">
-</a><a href='https://github.com/alphaolomi/laravel-azampay/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain'>
-<img src="https://img.shields.io/github/workflow/status/alphaolomi/laravel-azampay/Fix%20PHP%20code%20style%20issues?label=code%20style" alt=GitHub Code Style Action Status">
-</a><a href="https://packagist.org/packages/alphaolomi/laravel-azampay">
-<img src="https://img.shields.io/packagist/dt/alphaolomi/laravel-azampay.svg?style=flat-square" alt="Total Downloads">
+
+<a>
+    <img src="https://img.shields.io/packagist/v/alphaolomi/laravel-azampay.svg?style=flat-square" alt="Latest Version on Packagist">
 </a>
+
+<a href="https://github.com/alphaolomi/laravel-azampay/actions/workflows/tests.yml">
+    <img src="https://github.com/alphaolomi/laravel-azampay/actions/workflows/tests.yml/badge.svg" alt="GitHub Tests Action Status">
+</a>
+
+<a href='https://github.com/alphaolomi/laravel-azampay/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain'>
+    <img src="https://github.com/alphaolomi/laravel-azampay/actions/workflows/fix-php-code-style-issues.yml/badge.svg" alt="GitHub Code Style Action Status">
+</a>
+
+<a href="https://packagist.org/packages/alphaolomi/laravel-azampay">
+    <img src="https://img.shields.io/packagist/dt/alphaolomi/laravel-azampay.svg?style=flat-square" alt="Total Downloads">
+</a>
+
 </div>
 
 ## Installation
