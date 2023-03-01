@@ -66,6 +66,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## Credits
 
 -   [Alpha Olomi](https://github.com/alphaolomi)
+-   [omakei](https://github.com/omakei)
 -   [All Contributors](../../contributors)
 
 ## License
