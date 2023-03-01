@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $auth_stub = json_decode(
-        file_get_contents(__DIR__ . '/stubs/responses/generate_token_success.json'),
+        file_get_contents(__DIR__.'/stubs/responses/generate_token_success.json'),
         true
     );
 
@@ -14,13 +14,11 @@ beforeEach(function () {
         AzampayService::SANDBOX_AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
         AzampayService::AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
     ]);
-
 });
 
-
-test('Azampay facade', function (){
+test('Azampay facade', function () {
     $stub = json_decode(
-        file_get_contents(__DIR__ . '/stubs/responses/bank_checkout_success.json'),
+        file_get_contents(__DIR__.'/stubs/responses/bank_checkout_success.json'),
         true
     );
 
@@ -28,7 +26,6 @@ test('Azampay facade', function (){
         AzampayService::BASE_URL.'/azampay/bank/checkout' => Http::response($stub, 200),
         AzampayService::SANDBOX_BASE_URL.'/azampay/bank/checkout' => Http::response($stub, 200),
     ]);
-
 
     $data = Azampay::bankCheckout([
         'amount' => 1000,
@@ -38,9 +35,8 @@ test('Azampay facade', function (){
         'merchantName' => 'alphaolomi@gmail.com',
         'otp' => '1234',
         'provider' => 'CRDB',
-        'referenceId' => '24345345'
+        'referenceId' => '24345345',
     ]);
 
     $this->assertEquals($data, $stub);
 });
-

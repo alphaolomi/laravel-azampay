@@ -1,12 +1,11 @@
 <?php
 
-
 use Alphaolomi\Azampay\AzampayService;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $auth_stub = json_decode(
-        file_get_contents(__DIR__ . '/stubs/responses/generate_token_success.json'),
+        file_get_contents(__DIR__.'/stubs/responses/generate_token_success.json'),
         true
     );
 
@@ -14,14 +13,13 @@ beforeEach(function () {
         AzampayService::SANDBOX_AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
         AzampayService::AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
     ]);
-
 });
 
 it(/**
  * @throws Exception
- */ 'can successful and send mobile checkout request', function(){
+ */ 'can successful and send mobile checkout request', function () {
     $stub = json_decode(
-        file_get_contents(__DIR__ . '/stubs/responses/bank_checkout_success.json'),
+        file_get_contents(__DIR__.'/stubs/responses/bank_checkout_success.json'),
         true
     );
 
@@ -43,10 +41,9 @@ it(/**
     $this->assertEquals($data, $stub);
 });
 
-
-it('can throw exception if mobile checkout request return error', function(){
+it('can throw exception if mobile checkout request return error', function () {
     $stub = json_decode(
-        file_get_contents(__DIR__ . '/stubs/responses/bank_checkout_failure.json'),
+        file_get_contents(__DIR__.'/stubs/responses/bank_checkout_failure.json'),
         true
     );
 
@@ -67,4 +64,3 @@ it('can throw exception if mobile checkout request return error', function(){
 
     $this->assertEquals($data, $stub);
 });
-

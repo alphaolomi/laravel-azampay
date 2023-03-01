@@ -11,9 +11,8 @@ class Helpers
      * Cleans the mobile number to remove any whitespace or dashes
      *
      * @param  string  $mobileNumber
-     * @return string
      */
-    public static function cleanMobileNumber($mobileNumber)
+    public static function cleanMobileNumber($mobileNumber): string
     {
         $mobileNumber = preg_replace('/[^0-9]/', '', $mobileNumber);
 
@@ -25,15 +24,16 @@ class Helpers
         } elseif (strlen($mobileNumber) == 10 && $mobileNumber[0] == '0') {
             $mobileNumber = str_replace('0', '255', $mobileNumber, 1);
         }
+
+        return $mobileNumber;
     }
 
     /**
      * Clean the amount to remove any whitespace or commas
      *
      * @param  string  $amount
-     * @return string
      */
-    public static function cleanAmount($amount)
+    public static function cleanAmount($amount): string
     {
         $amount = trim($amount);
         $amount = str_replace(' ', '', $amount);

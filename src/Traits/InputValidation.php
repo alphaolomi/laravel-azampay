@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Alphaolomi\Azampay\Traits;
-
 
 use Exception;
 use Illuminate\Support\Facades\Validator;
@@ -11,7 +9,8 @@ use Illuminate\Validation\Rule;
 trait InputValidation
 {
     /**
-     * @param array<string, string> $payload
+     * @param  array<string, string>  $payload
+     *
      * @throws Exception
      */
     private function validateGenerateInput(array $payload)
@@ -19,7 +18,7 @@ trait InputValidation
         $validator = Validator::make($payload, [
             'appName' => ['required', 'string'],
             'clientId' => ['required', 'string'],
-            'clientSecret' => ['required', 'string']
+            'clientSecret' => ['required', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -47,8 +46,8 @@ trait InputValidation
     private function validateBankCheckoutInput(array $payload)
     {
         $validator = Validator::make($payload, [
-            'merchantMobileNumber' =>  ['required', 'numeric'],
-            'merchantName' =>  ['nullable', 'string'],
+            'merchantMobileNumber' => ['required', 'numeric'],
+            'merchantName' => ['nullable', 'string'],
             'otp' => ['required', 'numeric'],
             'referenceId' => ['required', 'string'],
             'amount' => ['required', 'numeric'],
@@ -68,7 +67,7 @@ trait InputValidation
         $validator = Validator::make($payload, [
             'amount' => ['required', 'numeric'],
             'appName' => ['required', 'string'],
-            'cart.items.*.name' =>['required', 'string'],
+            'cart.items.*.name' => ['required', 'string'],
             'clientId' => ['required', 'string'],
             'currency' => ['required', 'string', Rule::in(['TZS'])],
             'externalId' => ['required', 'string', 'max:30'],
