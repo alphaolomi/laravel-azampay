@@ -37,6 +37,18 @@ You can publish the config file with:
 php artisan vendor:publish --tag="azampay-config"
 ```
 
+## Setup
+
+Add the following to your .env file
+
+```bash
+AZAMPAY_APP_NAME="your_app_name"
+AZAMPAY_CLIENT_ID="your_client_id"
+AZAMPAY_CLIENT_SECRET="your_client_secret"
+AZAMPAY_ENVIRONMENT="sandbox"
+AZAMPAY_TOKEN="Your_Token"
+```
+
 ## Usage
 ## Checkout API
 ### MNO Checkout
@@ -55,12 +67,18 @@ $data = $azampay->mobileCheckout([
     'externalId' => '08012345678',
     'provider' => 'Mpesa',
 ]);
-
-# Response
-[ 'transactionId' => 'string', 'message' => 'string' ]
-    
-
 ```
+### Response
+
+```json
+array:3 [▼
+  "success" => true
+  "transactionId" => "b85e971981844a6f8888b42579655b8f"
+  "message" => "Your request has been received and is being processed."
+]
+```
+
+
 MNO checkout using Facade Class
 
 ```php
@@ -73,11 +91,16 @@ $data = Azampay::mobileCheckout([
     'externalId' => '08012345678',
     'provider' => 'Mpesa',
 ]);
+```
 
-# Response
-[ 'transactionId' => 'string', 'message' => 'string' ]
-    
 
+### Response
+```json
+array:3 [▼
+  "success" => true
+  "transactionId" => "b85e971981844a6f8888b42579655b8f"
+  "message" => "Your request has been received and is being processed."
+]
 ```
 
 ### Bank Checkout
@@ -99,11 +122,15 @@ $data = $azampay->bankCheckout([
         'provider' => 'CRDB',
         'referenceId' => '24345345',
     ]);
+```
 
-# Response
-[ 'transactionId' => 'string', 'message' => 'string' ]
-    
-
+### Response
+```json
+array:3 [▼
+  "success" => true
+  "transactionId" => "b85e971981844a6f8888b42579655b8f"
+  "message" => "Your request has been received and is being processed."
+]
 ```
 Bank checkout using Facade Class
 
@@ -140,17 +167,20 @@ $data = $azampay->getPaymentPartners();
 # Response
 [
     [
-        'logoUrl' => 'string',
-        'partnerName' => 'string',
-        'provider' => 0,
+        'id' => "6ebafc56-6d4d-4265-a8d4-c0e1e7806c19",
+        'logoUrl' => 'https://azampay-sarafutest.s3.eu-central-1.amazonaws.com/azampesa.png',
+        'partnerName' => 'Azampesa',
+        'provider' => 5,
         'vendorName' => 'string',
         'paymentVendorId' => '1213c943-b30e-4c9e-ac2f-d34796f01d2d',
         'paymentPartnerId' => '70cd6bba-7f81-4ac8-9276-d5c0a189f2d4',
-        'currency' => 'string'
-    ]
+        "paymentAcknowledgmentRoute": "url",
+        'currency' => 'TZS',
+        "status" =>  "1",
+        "vendorType" =>  "seller"
+    ],
+    // ...
 ]
-    
-
 ```
 Get payment partners using Facade Class
 
@@ -162,16 +192,20 @@ $data = Azampay::getPaymentPartners();
 # Response
 [
     [
-        'logoUrl' => 'string',
-        'partnerName' => 'string',
-        'provider' => 0,
+        'id' => "6ebafc56-6d4d-4265-a8d4-c0e1e7806c19",
+        'logoUrl' => 'https://azampay-sarafutest.s3.eu-central-1.amazonaws.com/azampesa.png',
+        'partnerName' => 'Azampesa',
+        'provider' => 5,
         'vendorName' => 'string',
         'paymentVendorId' => '1213c943-b30e-4c9e-ac2f-d34796f01d2d',
         'paymentPartnerId' => '70cd6bba-7f81-4ac8-9276-d5c0a189f2d4',
-        'currency' => 'string'
-    ]
+        "paymentAcknowledgmentRoute": "url",
+        'currency' => 'TZS',
+        "status" =>  "1",
+        "vendorType" =>  "seller"
+    ],
+    // ...
 ]
-
 ```
 
 ### Post Checkout
@@ -240,14 +274,17 @@ $data = Azampay::postCheckout([
 
 ```
 
-### Callback
+### Callback route and event
 
-When the package the callback from azampay it will
+The packges has a route for handling callback from Azampay. The
+route is `/api/v1/Checkout/Callback`.
+
+Whenever a callback is received from Azampay, the package will
 dispatch Event `AzampayCallback::class` . You can create a
-listener and do further process with the callback data which will
-be pass when the event get dispatch.
+listener and do further processing with the callback data which will
+be passed when the event get dispatched.
 
-On you `App\Providers\EventServiceProvider` register a listener
+On your `App\Providers\EventServiceProvider` register a listener
 for `AzampayCallback::class` event.
 
 ```php
@@ -311,9 +348,8 @@ $data = $azampay->createTransfer([
         'statusCode' => 200
     ]
 ]
-    
-
 ```
+
 Create transfer using Facade Class
 
 ```php
@@ -365,9 +401,9 @@ use Alphaolomi\Azampay\AzampayService;
 $azampay = new AzampayService();
 
 $data = $azampay->nameLookup([
-        'bankName' => 'string',
-        'accountNumber' => 'string',
-    ]);
+    'bankName' => 'string',
+    'accountNumber' => 'string',
+]);
 
 # Response
 [
@@ -377,8 +413,8 @@ $data = $azampay->nameLookup([
     'accountNumber' => 'string',
     'bankName' => 'string'
 ]
-
 ```
+
 Name lookup using Facade Class
 
 ```php
@@ -410,9 +446,9 @@ use Alphaolomi\Azampay\AzampayService;
 $azampay = new AzampayService();
 
 $data = $azampay->getTransactionStatus([
-            'bankName' => 'CRDB', 
-            'pgReferenceId' => '10'
-        ]);
+    'bankName' => 'CRDB', 
+    'pgReferenceId' => '10'
+]);
 
 # Response
 [
@@ -423,8 +459,8 @@ $data = $azampay->getTransactionStatus([
         'statusCode': 200
     ]
 ]
-
 ```
+
 Get transaction status using Facade Class
 
 ```php
@@ -433,7 +469,7 @@ use Alphaolomi\Azampay\Facades\Azampay;
 $data = Azampay::getTransactionStatus([
     'bankName' => 'CRDB', 
     'pgReferenceId' => '10'
-    ]);
+]);
 
 # Response
 [
@@ -473,9 +509,14 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## Credits
 
 -   [Alpha Olomi](https://github.com/alphaolomi)
--   [omakei](https://github.com/omakei)
+-   [Omakei](https://github.com/omakei)
 -   [All Contributors](../../contributors)
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+
+## Support us
+
+If you find this package useful, you can support us by staring this repository and sharing it with others.
