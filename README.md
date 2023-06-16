@@ -23,9 +23,17 @@
 </div>
 
 
+Laravel Axampay provides an expressive, fluent interface to Azampay's payments services. It handles almost all of the boilerplate payments & billing 
+so you don't have to.
+ 
 ## Installation
 
-You can install the package via composer:
+### Prerequisites
+
+- Laravel v9+
+- Composer
+
+You can install the package via Composer:
 
 ```bash
 composer require alphaolomi/laravel-azampay
@@ -50,10 +58,12 @@ AZAMPAY_TOKEN="Your_Token"
 ```
 
 ## Usage
+
 ## Checkout API
+
 ### MNO Checkout
 
-MNO checkout using AzampayService Class
+Mobile checkout using `AzampayService` Class
 
 ```php
 use Alphaolomi\Azampay\AzampayService;
@@ -68,16 +78,16 @@ $data = $azampay->mobileCheckout([
     'provider' => 'Mpesa',
 ]);
 ```
+
 ### Response
 
-```json
+```
 array:3 [▼
   "success" => true
   "transactionId" => "b85e971981844a6f8888b42579655b8f"
   "message" => "Your request has been received and is being processed."
 ]
 ```
-
 
 MNO checkout using Facade Class
 
@@ -93,9 +103,9 @@ $data = Azampay::mobileCheckout([
 ]);
 ```
 
-
 ### Response
-```json
+
+```
 array:3 [▼
   "success" => true
   "transactionId" => "b85e971981844a6f8888b42579655b8f"
@@ -125,13 +135,15 @@ $data = $azampay->bankCheckout([
 ```
 
 ### Response
-```json
+
+```php
 array:3 [▼
   "success" => true
   "transactionId" => "b85e971981844a6f8888b42579655b8f"
   "message" => "Your request has been received and is being processed."
 ]
 ```
+
 Bank checkout using Facade Class
 
 ```php
@@ -182,6 +194,7 @@ $data = $azampay->getPaymentPartners();
     // ...
 ]
 ```
+
 Get payment partners using Facade Class
 
 ```php
@@ -240,9 +253,10 @@ $data = $azampay->postCheckout([
 
 # Response
 [ 'transactionId' => 'string', 'message' => 'string' ]
-    
+
 
 ```
+
 Post checkout using Facade Class
 
 ```php
@@ -276,20 +290,51 @@ $data = Azampay::postCheckout([
 
 ### Callback route and event
 
-The packges has a route for handling callback from Azampay. The
-route is `/api/v1/Checkout/Callback`.
+The packages has a route for handling callback from Azampay. The
+route is `/api/v1/Checkout/Callback` and named `checkout_payment_callback`.
 
 Whenever a callback is received from Azampay, the package will
 dispatch Event `AzampayCallback::class` . You can create a
 listener and do further processing with the callback data which will
 be passed when the event get dispatched.
 
+#### Registering the route
+
+This package has a route for handling callback from Azampay. Its enabled by default.
+
 On your `App\Providers\EventServiceProvider` register a listener
 for `AzampayCallback::class` event.
 
+
+```bash
+php artisan make:listener AzampayCallbackListener
+```
+
+
+In your `App\Listeners\AzampayCallbackListener` class, add the update the `handle` method to handle the event.
+
 ```php
 use Alphaolomi\Azampay\Events\AzampayCallback;
-use App\Listeners\YourEventListener;
+// ...
+
+public function handle(AzampayCallback $event)
+{
+    // Handle the event
+    // Example save the callback data to database
+    
+    // $event->data 
+    // See https://developerdocs.azampay.co.tz/redoc#tag/Checkout-API/operation/Callback
+    // for callback data structure
+    // ...
+}
+
+// ...
+```
+
+
+```php
+use Alphaolomi\Azampay\Events\AzampayCallback;
+use App\Listeners\AzampayCallbackListener;
 
 /**
  * The event listener mappings for the application.
@@ -298,11 +343,12 @@ use App\Listeners\YourEventListener;
  */
 protected $listen = [
     AzampayCallback::class => [
-        YourEventListener::class,
+        AzampayCallbackListener::class,
     ],
 ];
-
 ```
+
+Now, whenever a callback is received from Azampay, the package will call the `handle` method of the `AzampayCallbackListener` class. with the callback data.
 
 ## Disbursement API
 
@@ -446,7 +492,7 @@ use Alphaolomi\Azampay\AzampayService;
 $azampay = new AzampayService();
 
 $data = $azampay->getTransactionStatus([
-    'bankName' => 'CRDB', 
+    'bankName' => 'CRDB',
     'pgReferenceId' => '10'
 ]);
 
@@ -467,7 +513,7 @@ Get transaction status using Facade Class
 use Alphaolomi\Azampay\Facades\Azampay;
 
 $data = Azampay::getTransactionStatus([
-    'bankName' => 'CRDB', 
+    'bankName' => 'CRDB',
     'pgReferenceId' => '10'
 ]);
 
@@ -508,14 +554,13 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
--   [Alpha Olomi](https://github.com/alphaolomi)
--   [Omakei](https://github.com/omakei)
--   [All Contributors](../../contributors)
+- [Alpha Olomi](https://github.com/alphaolomi)
+- [Omakei](https://github.com/omakei)
+- [All Contributors](../../contributors)
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
 
 ## Support us
 
