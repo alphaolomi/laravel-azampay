@@ -32,6 +32,15 @@ class AzampayService
 
     private string $authBaseUrl;
 
+    /**
+     * @deprecated use $token instead
+     *             This will be removed in the next major release,
+     *             use $token instead of $apiKey, if you are using
+     *             this property in your code.
+     * @var string
+     */
+
+	// @phpstan-ignore-next-line
     private string $apiKey;
 
     private string $token;
