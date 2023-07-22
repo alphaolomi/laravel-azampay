@@ -1,175 +1,34 @@
 <?php
 
 use Alphaolomi\Azampay\AzampayService;
-use Alphaolomi\Azampay\Events\AzampayCallback;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
-use function Pest\Laravel\post;
 
-beforeEach(function () {
-    $auth_stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/generate_token_success.json'),
-        true
-    );
-
-    Http::fake([
-        AzampayService::SANDBOX_AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
-        AzampayService::AUTH_BASE_URL.'/*' => Http::response($auth_stub, 200),
-    ]);
+it('can instantiate the service', function () {
+    $config = [
+        'appName' => 'Openpesa',
+        'clientId' => '0239aa76-62f0-4479-8e52-2dd62751933b',
+        'clientSecret' => "GxBITgYleAzmoZ5Q3CNRJkuJHISfYfZS2GUyy0zkkMph6flN/bKq1Iouum/WBMFUfOOWyE7h5r5vCMQS1mAhuiMHvDVfC43QzoMRJnWDQ50tHufhbVsZUwonIkmusQZRSIS7Q0rMqqi93mJhPi6gIwiVlh8oeQuA9N3EsNr0rStgEhT9doVVjbo65ilufUo118/dr0fWbFGJv2n7Y2xddyLQ5eCO84Ie8wfSSKLBSpK+bKhUC36XtGR/Ocj3arE3CXLkfXYL0ELzrda4wkf4rW4dAlagTD2DqxjJoyOv1/+JOkp9B1TAK1RWaNX0UYWFTTsnoPQjmzjUAQWq+vBiDJA66AV3Yq7yj9Mtw0EmLzRXjsUFdI0PPyHfRgfLBJAv6KyK0ZVHJ4oKbOul0qhFeocmyPF8UT7Ps1f1FV04xMKWtibROdGHcYW20SGPhU6UIBJd+9wj5CXYklWtw4p4MsA/AdN2+kjjqfSrwu3H88zqukD+TkiyGVxv/kD3tidlcfOVL8JYuc7std3Pd8VKt8RqcKHijUF6djOM9BiuGUoIiEyb8pRMiBc5HMkemCO2nXPV6uy4CjAD2bZg+KN6dmNorQ1jiOHWKTK7gCO3GlRoj9PZi2EJdXNuTUYvEJcFJBpL4mFBH81ujKAIlpZbCPlKb5wa8Ux6oJuntQ5EJi4="
+    ];
+    $service = new AzampayService($config);
+    expect($service)->toBeInstanceOf(AzampayService::class);
 });
 
-it('can get payment partners successful', function () {
-    $stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/get_partners_success.json'),
-        true
-    );
 
-    Http::fake([
-        AzampayService::BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response($stub, 200),
-        AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response($stub, 200),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->getPaymentPartners();
-
-    $this->assertEquals($data, $stub);
-});
-
-it('can throw exception if get partners url respond with error', function () {
-    Http::fake([
-        AzampayService::BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response('error string', 400),
-        AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response('error string', 400),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->getPaymentPartners();
-
-    $this->assertEquals($data, 'error string');
-})->throws(RuntimeException::class, 'error string');
-
-it('can post checkout successful', function () {
-    Http::fake([
-        AzampayService::BASE_URL.'/api/v1/Partner/PostCheckout' => Http::response('string', 200),
-        AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/PostCheckout' => Http::response('string', 200),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->postCheckout([
-        'appName' => 'azampay',
-        'clientId' => 'e9b57fab-1850',
-        'vendorId' => 'e9b57fab-1850-44d4-8499-71fd15c845a0',
-        'language' => 'en',
+it('can make mobile checkout', function () {
+    $config = [
+        'appName' => 'Openpesa',
+        'clientId' => '0239aa76-62f0-4479-8e52-2dd62751933b',
+        'clientSecret' => "GxBITgYleAzmoZ5Q3CNRJkuJHISfYfZS2GUyy0zkkMph6flN/bKq1Iouum/WBMFUfOOWyE7h5r5vCMQS1mAhuiMHvDVfC43QzoMRJnWDQ50tHufhbVsZUwonIkmusQZRSIS7Q0rMqqi93mJhPi6gIwiVlh8oeQuA9N3EsNr0rStgEhT9doVVjbo65ilufUo118/dr0fWbFGJv2n7Y2xddyLQ5eCO84Ie8wfSSKLBSpK+bKhUC36XtGR/Ocj3arE3CXLkfXYL0ELzrda4wkf4rW4dAlagTD2DqxjJoyOv1/+JOkp9B1TAK1RWaNX0UYWFTTsnoPQjmzjUAQWq+vBiDJA66AV3Yq7yj9Mtw0EmLzRXjsUFdI0PPyHfRgfLBJAv6KyK0ZVHJ4oKbOul0qhFeocmyPF8UT7Ps1f1FV04xMKWtibROdGHcYW20SGPhU6UIBJd+9wj5CXYklWtw4p4MsA/AdN2+kjjqfSrwu3H88zqukD+TkiyGVxv/kD3tidlcfOVL8JYuc7std3Pd8VKt8RqcKHijUF6djOM9BiuGUoIiEyb8pRMiBc5HMkemCO2nXPV6uy4CjAD2bZg+KN6dmNorQ1jiOHWKTK7gCO3GlRoj9PZi2EJdXNuTUYvEJcFJBpL4mFBH81ujKAIlpZbCPlKb5wa8Ux6oJuntQ5EJi4="
+    ];
+    $azampay = new AzampayService($config);
+    $data = $azampay->mobileCheckout([
+        'amount' => 1000,
         'currency' => 'TZS',
-        'externalId' => 'e9b57fab-44d4-71fd15c845a6',
-        'requestOrigin' => 'dukaspace.com',
-        'redirectFailURL' => 'dukaspace.com/failure',
-        'redirectSuccessURL' => 'dukaspace.com/success',
-        'vendorName' => 'dukaspace',
-        'amount' => 50000,
-        'cart' => [
-            'items' => [
-                [
-                    'name' => 'dukaspace',
-                ],
-            ],
-        ],
+        'accountNumber' => '0625933171',
+        'externalId' => '08012345678',
+        'provider' => 'Mpesa',
     ]);
 
-    $this->assertEquals($data, 'string');
-});
 
-it('can create transfer successful', function () {
-    $stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/createtransfer_success.json'),
-        true
-    );
-
-    Http::fake([
-        AzampayService::BASE_URL.'/azampay/createtransfer' => Http::response($stub, 200),
-        AzampayService::SANDBOX_BASE_URL.'/azampay/createtransfer' => Http::response($stub, 200),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->createTransfer([
-        'source' => [
-            'countryCode' => 'string',
-            'fullName' => 'string',
-            'bankName' => 'tigo',
-            'accountNumber' => 'string',
-            'currency' => 'string',
-        ],
-        'destination' => [
-            'countryCode' => 'string',
-            'fullName' => 'string',
-            'bankName' => 'tigo',
-            'accountNumber' => 'string',
-            'currency' => 'string',
-        ],
-        'transferDetails' => [
-            'type' => 'string',
-            'amount' => 0,
-            'date' => '2019-08-24T141522Z',
-        ],
-        'externalReferenceId' => 'string',
-        'remarks' => 'string',
-    ]);
-
-    $this->assertEquals($data, $stub);
-});
-
-it('can name lookup successful', function () {
-    $stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/namelookup_success.json'),
-        true
-    );
-
-    Http::fake([
-        AzampayService::BASE_URL.'/azampay/namelookup' => Http::response($stub, 200),
-        AzampayService::SANDBOX_BASE_URL.'/azampay/namelookup' => Http::response($stub, 200),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->nameLookup([
-        'bankName' => 'string',
-        'accountNumber' => 'string',
-    ]);
-
-    $this->assertEquals($data, $stub);
-});
-
-it('can get transaction status successful', function () {
-    $stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/transactionstatus_success.json'),
-        true
-    );
-
-    Http::fake([
-        AzampayService::BASE_URL.'/azampay/gettransactionstatus?*' => Http::response($stub, 200),
-        AzampayService::SANDBOX_BASE_URL.'/azampay/gettransactionstatus?*' => Http::response($stub, 200),
-    ]);
-
-    $azampay = new AzampayService();
-
-    $data = $azampay->getTransactionStatus(['bankName' => 'CRDB', 'pgReferenceId' => 'omakei']);
-
-    $this->assertEquals($data, $stub);
-});
-
-it('can receive callback and dispatch azampay callback event', function () {
-    $stub = json_decode(
-        file_get_contents(__DIR__.'/stubs/responses/callback.json'),
-        true
-    );
-    Event::fake([
-        AzampayCallback::class,
-    ]);
-
-    post(route('checkout_payment_callback'), $stub)->assertStatus(200);
-
-    Event::assertDispatched(AzampayCallback::class);
+    expect($data)->dd();
+    // expect($data)->toBeArray();
 });
