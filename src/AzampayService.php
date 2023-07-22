@@ -40,30 +40,54 @@ class AzampayService
      * @var string
      */
 
-	// @phpstan-ignore-next-line
+    /**
+     * Deprecated
+     * @deprecated It will be removed in the next major release.
+     * @var string
+     */
+    // @phpstan-ignore-next-line
     private string $apiKey;
 
+    /**
+     * A valid access token from Azampay API
+     *
+     * @var string
+     */
     private string $token;
+
+    private array $config;
 
     /**
      * @throws Exception
      */
-    public function __construct()
+    public function __construct($config = [])
     {
-        if (empty(config('azampay.appName'))) {
+
+        // appName
+        if (!array_key_exists('appName', $config)) {
             throw new \InvalidArgumentException('Missing required option: appName');
         }
 
-        if (empty(config('azampay.clientId'))) {
+        // clientId
+        if (!array_key_exists('clientId', $config)) {
             throw new \InvalidArgumentException('Missing required option: clientId');
         }
 
-        if (empty(config('azampay.clientSecret'))) {
+        // clientSecret
+        if (!array_key_exists('clientSecret', $config)) {
             throw new \InvalidArgumentException('Missing required option: clientSecret');
         }
 
-        $this->baseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
-        $this->authBaseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
+        // environment
+        if (!array_key_exists('environment', $config)) {
+            $config['environment'] = 'sandbox';
+        }
+
+        $this->config = $config;
+
+        // ...
+        $this->baseUrl =  $config['environment'] === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
+        $this->authBaseUrl =  $config['environment'] === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
 
         $this->generateToken();
     }
@@ -77,13 +101,15 @@ class AzampayService
      */
     public function generateToken(): void
     {
+        $payload = [
+            'appName' => $this->config['appName'],
+            'clientId' => $this->config['clientId'],
+            'clientSecret' => $this->config['clientSecret'],
+        ];
+
         $response = Http::post(
-            $this->authBaseUrl.'/AppRegistration/GenerateToken',
-            [
-                'appName' => config('azampay.appName'),
-                'clientId' => config('azampay.clientId'),
-                'clientSecret' => config('azampay.clientSecret'),
-            ]
+            $this->authBaseUrl . '/AppRegistration/GenerateToken',
+            $payload
         )->onError(function (Response $response) {
             if ($response->status() === HTTPResponse::HTTP_LOCKED) {
                 throw new Exception('Provided detail is not valid for this app or secret key has been expired');
@@ -92,6 +118,8 @@ class AzampayService
             if ($response->serverError()) {
                 throw new Exception('There is a problem with payment processing server.');
             }
+
+            // throw new $response->toException();
         });
 
         $this->token = $response->json('data')['accessToken'];
@@ -120,20 +148,23 @@ class AzampayService
      */
     public function mobileCheckout(array $data): ?array
     {
-        $this->validateMNOCheckoutInput($data);
+        // $this->validateMNOCheckoutInput($data);
 
-        $response = $this->sendRequest('post', '/azampay/mno/checkout', $data)
-            ->onError(function (Response $response) {
-                if ($response->badRequest()) {
-                    throw new \RuntimeException($response->body());
-                }
+        $response = $this->sendRequest('post', '/azampay/mno/checkout', $data);
+            // ->onError(function (Response $response) {
+            //     if ($response->badRequest()) {
+            //         throw new \RuntimeException($response->body());
+            //     }
 
-                if ($response->serverError()) {
-                    throw new Exception('There is a problem with payment processing server.');
-                }
-            });
+            //     if ($response->serverError()) {
+            //         throw new Exception('There is a problem with payment processing server.');
+            //     }
+            // });
 
-        return $response->json();
+        // return $response->json();
+        $res['status'] = $response->status();
+        $res['json'] = $response->json();
+        return $res;
     }
 
     /**
@@ -362,7 +393,7 @@ class AzampayService
         return Http::withToken($this->token)
             ->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->$method($this->baseUrl.$uri, $data);
+            ])->$method($this->baseUrl . $uri, $data);
     }
 
     /**
@@ -373,6 +404,6 @@ class AzampayService
         return Http::withToken($this->token)
             ->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->$method($this->baseUrl.$uri, $data);
+            ])->$method($this->baseUrl . $uri, $data);
     }
 }
