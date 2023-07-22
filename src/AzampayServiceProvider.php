@@ -28,15 +28,15 @@ class AzampayServiceProvider extends PackageServiceProvider
                 throw new \Exception('Azampay config not found');
             }
 
-            if($data['appName']) {
+            if ($data['appName']) {
                 throw new \Exception('AppName is required');
             }
 
-            if($data['clientId']) {
+            if ($data['clientId']) {
                 throw new \Exception('ClientId is required');
             }
 
-            if($data['clientSecret']) {
+            if ($data['clientSecret']) {
                 throw new \Exception('ClientSecret is required');
             }
 

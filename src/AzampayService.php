@@ -37,21 +37,18 @@ class AzampayService
      *             This will be removed in the next major release,
      *             use $token instead of $apiKey, if you are using
      *             this property in your code.
-     * @var string
      */
 
     /**
      * Deprecated
+     *
      * @deprecated It will be removed in the next major release.
-     * @var string
      */
     // @phpstan-ignore-next-line
     private string $apiKey;
 
     /**
      * A valid access token from Azampay API
-     *
-     * @var string
      */
     private string $token;
 
@@ -64,30 +61,30 @@ class AzampayService
     {
 
         // appName
-        if (!array_key_exists('appName', $config)) {
+        if (! array_key_exists('appName', $config)) {
             throw new \InvalidArgumentException('Missing required option: appName');
         }
 
         // clientId
-        if (!array_key_exists('clientId', $config)) {
+        if (! array_key_exists('clientId', $config)) {
             throw new \InvalidArgumentException('Missing required option: clientId');
         }
 
         // clientSecret
-        if (!array_key_exists('clientSecret', $config)) {
+        if (! array_key_exists('clientSecret', $config)) {
             throw new \InvalidArgumentException('Missing required option: clientSecret');
         }
 
         // environment
-        if (!array_key_exists('environment', $config)) {
+        if (! array_key_exists('environment', $config)) {
             $config['environment'] = 'sandbox';
         }
 
         $this->config = $config;
 
         // ...
-        $this->baseUrl =  $config['environment'] === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
-        $this->authBaseUrl =  $config['environment'] === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
+        $this->baseUrl = $config['environment'] === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
+        $this->authBaseUrl = $config['environment'] === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
 
         $this->generateToken();
     }
@@ -108,7 +105,7 @@ class AzampayService
         ];
 
         $response = Http::post(
-            $this->authBaseUrl . '/AppRegistration/GenerateToken',
+            $this->authBaseUrl.'/AppRegistration/GenerateToken',
             $payload
         )->onError(function (Response $response) {
             if ($response->status() === HTTPResponse::HTTP_LOCKED) {
@@ -151,19 +148,20 @@ class AzampayService
         // $this->validateMNOCheckoutInput($data);
 
         $response = $this->sendRequest('post', '/azampay/mno/checkout', $data);
-            // ->onError(function (Response $response) {
-            //     if ($response->badRequest()) {
-            //         throw new \RuntimeException($response->body());
-            //     }
+        // ->onError(function (Response $response) {
+        //     if ($response->badRequest()) {
+        //         throw new \RuntimeException($response->body());
+        //     }
 
-            //     if ($response->serverError()) {
-            //         throw new Exception('There is a problem with payment processing server.');
-            //     }
-            // });
+        //     if ($response->serverError()) {
+        //         throw new Exception('There is a problem with payment processing server.');
+        //     }
+        // });
 
         // return $response->json();
         $res['status'] = $response->status();
         $res['json'] = $response->json();
+
         return $res;
     }
 
@@ -373,7 +371,7 @@ class AzampayService
      *
      * @throws Exception
      */
-    public function getTransactionStatus(?array $data = null): ?array
+    public function getTransactionStatus(array $data = null): ?array
     {
         $response = $this->sendDisbursementRequest('get', '/azampay/gettransactionstatus', $data)
             ->onError(function (Response $response) {
@@ -393,17 +391,17 @@ class AzampayService
         return Http::withToken($this->token)
             ->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->$method($this->baseUrl . $uri, $data);
+            ])->$method($this->baseUrl.$uri, $data);
     }
 
     /**
      * Prepare disbursement request to be sent to Azampay
      */
-    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
+    private function sendDisbursementRequest(string $method, string $uri, array $data = null): Response
     {
         return Http::withToken($this->token)
             ->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->$method($this->baseUrl . $uri, $data);
+            ])->$method($this->baseUrl.$uri, $data);
     }
 }
