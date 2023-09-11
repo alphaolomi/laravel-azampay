@@ -10,10 +10,9 @@ class AzampayCallback
 
     /**
      * Create a new event instance.
+     *
      * @see https://laravel.com/docs/8.x/events#defining-events
      * @see https://developerdocs.azampay.co.tz/redoc#tag/Checkout-API/operation/Callback
-     *
-     * @param array $data
      *
      * @return void
      */

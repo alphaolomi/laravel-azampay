@@ -37,10 +37,9 @@ class AzampayService
      *             This will be removed in the next major release,
      *             use $token instead of $apiKey, if you are using
      *             this property in your code.
-     * @var string
      */
 
-	// @phpstan-ignore-next-line
+    // @phpstan-ignore-next-line
     private string $apiKey;
 
     private string $token;
@@ -342,7 +341,7 @@ class AzampayService
      *
      * @throws Exception
      */
-    public function getTransactionStatus(?array $data = null): ?array
+    public function getTransactionStatus(array $data = null): ?array
     {
         $response = $this->sendDisbursementRequest('get', '/azampay/gettransactionstatus', $data)
             ->onError(function (Response $response) {
@@ -368,7 +367,7 @@ class AzampayService
     /**
      * Prepare disbursement request to be sent to Azampay
      */
-    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
+    private function sendDisbursementRequest(string $method, string $uri, array $data = null): Response
     {
         return Http::withToken($this->token)
             ->withHeaders([
