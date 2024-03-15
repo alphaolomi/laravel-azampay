@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-azampay` will be documented in this file.
 
+## Unreleased 
+
+### What's Changed
+
+- **Laravel 11 Support** by @alphaolomi
+
 ## v0.1.0 - 2023-03-01
 
 ### What's Changed
