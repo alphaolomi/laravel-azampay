@@ -99,17 +99,17 @@ class AzampayService
     /**
      * Perform mobile checkout via Azampay
      *
-     * @param  array  $data {
-     *  'accountNumber': string,
-     *  'additionalProperties'?: array{
-     *  'property1': null,
-     *  'property2': null
-     *   },
-     *  'amount': string,
-     *  'currency': string,
-     *  'externalId': string,
-     *  'provider': Airtel | Tigo | Mpesa | Azampesa | Halopesa
-     * }
+     * @param  array  $data  {
+     *                       'accountNumber': string,
+     *                       'additionalProperties'?: array{
+     *                       'property1': null,
+     *                       'property2': null
+     *                       },
+     *                       'amount': string,
+     *                       'currency': string,
+     *                       'externalId': string,
+     *                       'provider': Airtel | Tigo | Mpesa | Azampesa | Halopesa
+     *                       }
      * @return array|null{
      *   'transactionId': string,
      *   'message': string
@@ -138,7 +138,7 @@ class AzampayService
     /**
      * Perform bank checkout via Azampay
      *
-     * @param $data array {
+     * @param  $data  array {
      *
      *   additionalProperties: array {
      *   property1: null,
@@ -154,9 +154,9 @@ class AzampayService
      *   referenceId: string
      * }
      * @return array|null {
-     *   transactionId: string,
-     *   message: string
-     * }|null
+     *                    transactionId: string,
+     *                    message: string
+     *                    }|null
      *
      * @throws Exception
      */
@@ -182,18 +182,18 @@ class AzampayService
      * Get payment partners via Azampay
      *
      * @return array|null {
-     *   [
-     *       {
-     *       logoUrl: string,
-     *       partnerName: string,
-     *       provider: 0,
-     *       vendorName: string",
-     *       paymentVendorId: string,
-     *       paymentPartnerId: string,
-     *       currency: string
-     *       }
-     *   ]
-     * }|null
+     *                    [
+     *                    {
+     *                    logoUrl: string,
+     *                    partnerName: string,
+     *                    provider: 0,
+     *                    vendorName: string",
+     *                    paymentVendorId: string,
+     *                    paymentPartnerId: string,
+     *                    currency: string
+     *                    }
+     *                    ]
+     *                    }|null
      *
      * @throws Exception
      */
@@ -216,25 +216,25 @@ class AzampayService
     /**
      * Perform post checkout via Azampay
      *
-     * @param $data array {
-     *   appName: string,
-     *   clientId: string,
-     *   vendorId: e9b57fab-1850-44d4-8499-71fd15c845a0,
-     *   language: string,
-     *   currency: string,
-     *   externalId: string,
-     *   requestOrigin: string,
-     *   redirectFailURL: string,
-     *   redirectSuccessURL: string,
-     *   vendorName: string,
-     *   amount: string",
-     *   cart: {
-     *       items: [
-     *           {
-     *           name: string
-     *           }
-     *       ]
-     *   }
+     * @param  $data  array {
+     *               appName: string,
+     *               clientId: string,
+     *               vendorId: e9b57fab-1850-44d4-8499-71fd15c845a0,
+     *               language: string,
+     *               currency: string,
+     *               externalId: string,
+     *               requestOrigin: string,
+     *               redirectFailURL: string,
+     *               redirectSuccessURL: string,
+     *               vendorName: string,
+     *               amount: string",
+     *               cart: {
+     *               items: [
+     *               {
+     *               name: string
+     *               }
+     *               ]
+     *               }
      *
      * }
      *
@@ -252,7 +252,7 @@ class AzampayService
     /**
      * Perform bank checkout via Azampay
      *
-     * @param $data array {
+     * @param  $data  array {
      *
      *   source : {
      *      countryCode: string,
@@ -277,11 +277,11 @@ class AzampayService
      *   remarks: string
      * }
      * @return array|null {
-     *   data: Transaction successful.,
-     *   message: Request successful.,
-     *   success: true,
-     *   statusCode: 200
-     * }|null
+     *                    data: Transaction successful.,
+     *                    message: Request successful.,
+     *                    success: true,
+     *                    statusCode: 200
+     *                    }|null
      *
      * @throws Exception
      */
@@ -300,17 +300,17 @@ class AzampayService
     /**
      * Perform name lookup via Azampay
      *
-     * @param $data array {
-     *   bankName: string,
-     *   accountNumber: string
-     * }
+     * @param  $data  array {
+     *               bankName: string,
+     *               accountNumber: string
+     *               }
      * @return array|null {
-     *   name: string,
-     *   message: string,
-     *   success: true,
-     *   accountNumber: string,
-     *   bankName: string
-     * }|null
+     *                    name: string,
+     *                    message: string,
+     *                    success: true,
+     *                    accountNumber: string,
+     *                    bankName: string
+     *                    }|null
      *
      * @throws Exception
      */
@@ -329,19 +329,19 @@ class AzampayService
     /**
      * Perform bank checkout via Azampay
      *
-     * @param $data array | null {
-     *   bankName: CRDB | NMB, pgReferenceId: string
-     * }
+     * @param  $data  array | null {
+     *               bankName: CRDB | NMB, pgReferenceId: string
+     *               }
      * @return array|null {
-     *   data: Transaction successful.,
-     *   message: Request successful.,
-     *   success: true,
-     *   statusCode": 200
-     * }|null
+     *                    data: Transaction successful.,
+     *                    message: Request successful.,
+     *                    success: true,
+     *                    statusCode": 200
+     *                    }|null
      *
      * @throws Exception
      */
-    public function getTransactionStatus(array $data = null): ?array
+    public function getTransactionStatus(?array $data = null): ?array
     {
         $response = $this->sendDisbursementRequest('get', '/azampay/gettransactionstatus', $data)
             ->onError(function (Response $response) {
@@ -367,7 +367,7 @@ class AzampayService
     /**
      * Prepare disbursement request to be sent to Azampay
      */
-    private function sendDisbursementRequest(string $method, string $uri, array $data = null): Response
+    private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
     {
         return Http::withToken($this->token)
             ->withHeaders([
