@@ -30,7 +30,8 @@ so you don't have to.
 
 ### Prerequisites
 
-- Laravel v9+
+- PHP 8.1+
+- Laravel v10+
 - Composer
 
 You can install the package via Composer:
@@ -64,6 +65,8 @@ AZAMPAY_TOKEN="Your_Token"
 ### MNO Checkout
 
 Mobile checkout using `AzampayService` Class
+
+> NOTE: Configs are loaded automatically.
 
 ```php
 use Alphaolomi\Azampay\AzampayService;
