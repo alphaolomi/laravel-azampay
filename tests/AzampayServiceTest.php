@@ -174,3 +174,20 @@ it('can receive callback and dispatch azampay callback event', function () {
 
     Event::assertDispatched(AzampayCallback::class);
 });
+
+it('accepts a callback without submerchantAcc and with any operator name', function () {
+    $stub = json_decode(
+        file_get_contents(__DIR__.'/stubs/responses/callback.json'),
+        true
+    );
+    unset($stub['submerchantAcc']);
+    $stub['operator'] = 'Mixx';
+
+    Event::fake([
+        AzampayCallback::class,
+    ]);
+
+    post(route('checkout_payment_callback'), $stub)->assertStatus(200);
+
+    Event::assertDispatched(AzampayCallback::class);
+});
