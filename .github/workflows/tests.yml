@@ -66,6 +66,12 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      # Laravel 10 and 11 are end of life and carry open advisories, so Composer
+      # refuses to install them by default. They are test-only dependencies here.
+      - name: Allow end-of-life Laravel versions in the test matrix
+        if: matrix.laravel == '10.*' || matrix.laravel == '11.*'
+        run: composer config audit.block-insecure false
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
