@@ -110,10 +110,7 @@ class AzampayService
      *                       'externalId': string,
      *                       'provider': Airtel | Tigo | Mpesa | Azampesa | Halopesa
      *                       }
-     * @return array|null{
-     *   'transactionId': string,
-     *   'message': string
-     * }|null
+     * @return array{transactionId: string, message: string}|null
      *
      * @throws Exception
      */
