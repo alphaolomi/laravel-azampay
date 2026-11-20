@@ -56,6 +56,9 @@
         }
     },
     "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        },
         "laravel": {
             "providers": [
                 "Alphaolomi\\Azampay\\AzampayServiceProvider"
