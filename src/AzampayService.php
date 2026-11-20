@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Alphaolomi\Azampay;
 
+use Alphaolomi\Azampay\Exceptions\RequestException;
 use Alphaolomi\Azampay\Traits\InputValidation;
 use Exception;
-use Alphaolomi\Azampay\Exceptions\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Response as HTTPResponse;
 use Illuminate\Support\Facades\Cache;
