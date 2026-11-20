@@ -23,7 +23,7 @@ class AzampayServiceProvider extends PackageServiceProvider
     public function packageRegistered()
     {
         $this->app->bind('azampay', function () {
-            return new AzampayService();
+            return new AzampayService;
         });
     }
 }

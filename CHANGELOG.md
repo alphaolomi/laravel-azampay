@@ -23,6 +23,12 @@ All notable changes to `laravel-azampay` will be documented in this file.
 
 ## Unreleased
 
+- Laravel 12 support (#48 by @tufikhasan) and Laravel 13 support
+- PHP 8.2 is now the minimum; PHP 8.1 is end of life
+- Callback route accepts callbacks without `submerchantAcc` (optional in AzamPay's API) and any operator name; thanks @rohitgulam for the report
+- CI: tests and static analysis run on pull requests; matrix covers PHP 8.2 to 8.5 and Laravel 10 to 13
+- Added SECURITY.md and CONTRIBUTING.md
+
 ### What's Changed
 
 - **Laravel 11 Support** by @alphaolomi

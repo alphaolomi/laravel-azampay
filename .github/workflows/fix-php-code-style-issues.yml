@@ -1,9 +1,17 @@
 name: Fix PHP code style issues
 
-on: [push]
+on:
+  push:
+    paths:
+      - '**.php'
+
+permissions:
+  contents: write
 
 jobs:
   php-code-styling:
+    # Dependabot pushes run with a read-only token, so the commit step cannot push.
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -16,6 +24,6 @@ jobs:
         uses: aglipanci/laravel-pint-action@2.6
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Fix styling

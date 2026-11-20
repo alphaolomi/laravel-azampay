@@ -30,7 +30,7 @@ it('can get payment partners successful', function () {
         AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->getPaymentPartners();
 
@@ -43,7 +43,7 @@ it('can throw exception if get partners url respond with error', function () {
         AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/GetPaymentPartners' => Http::response('error string', 400),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->getPaymentPartners();
 
@@ -56,7 +56,7 @@ it('can post checkout successful', function () {
         AzampayService::SANDBOX_BASE_URL.'/api/v1/Partner/PostCheckout' => Http::response('string', 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->postCheckout([
         'appName' => 'azampay',
@@ -93,7 +93,7 @@ it('can create transfer successful', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/createtransfer' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->createTransfer([
         'source' => [
@@ -133,7 +133,7 @@ it('can name lookup successful', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/namelookup' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->nameLookup([
         'bankName' => 'string',
@@ -154,7 +154,7 @@ it('can get transaction status successful', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/gettransactionstatus?*' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->getTransactionStatus(['bankName' => 'CRDB', 'pgReferenceId' => 'omakei']);
 
@@ -166,6 +166,23 @@ it('can receive callback and dispatch azampay callback event', function () {
         file_get_contents(__DIR__.'/stubs/responses/callback.json'),
         true
     );
+    Event::fake([
+        AzampayCallback::class,
+    ]);
+
+    post(route('checkout_payment_callback'), $stub)->assertStatus(200);
+
+    Event::assertDispatched(AzampayCallback::class);
+});
+
+it('accepts a callback without submerchantAcc and with any operator name', function () {
+    $stub = json_decode(
+        file_get_contents(__DIR__.'/stubs/responses/callback.json'),
+        true
+    );
+    unset($stub['submerchantAcc']);
+    $stub['operator'] = 'Mixx';
+
     Event::fake([
         AzampayCallback::class,
     ]);

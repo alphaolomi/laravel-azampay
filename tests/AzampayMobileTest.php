@@ -26,7 +26,7 @@ it('can successful and send mobile checkout request', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/mno/checkout' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->mobileCheckout([
         'amount' => 1000,
@@ -50,7 +50,7 @@ it('can throw exception if mobile checkout request return error', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/mno/checkout' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->mobileCheckout([
         'amount' => 1000,
