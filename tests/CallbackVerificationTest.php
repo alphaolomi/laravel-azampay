@@ -243,3 +243,70 @@ it('dispatches an event for a disbursement callback when turned on', function ()
 
     postJson(CallbackRoutes::DISBURSEMENT_PATH, ['status' => 'success'])->assertStatus(422);
 });
+
+it('fetches the key again at most once per interval when signatures keep failing', function () {
+    config()->set('azampay.callback.verify', true);
+
+    Http::fake([azampayPublicKeyUrl() => Http::response(['publicKey' => $this->pair['public']], 200)]);
+
+    $forged = azampaySignedCallback($this->pair['private']);
+    $forged['transactionstatus'] = 'failure';
+
+    foreach (range(1, 5) as $attempt) {
+        postJson(route('checkout_payment_callback'), $forged)->assertStatus(403);
+    }
+
+    // one normal fetch, one forced refresh, then none until the interval passes
+    expect(Http::recorded(fn (ClientRequest $request) => str_contains($request->url(), '/azampay/v1/public-key'))->count())->toBe(2);
+
+    $this->travel(301)->seconds();
+    postJson(route('checkout_payment_callback'), $forged)->assertStatus(403);
+
+    expect(Http::recorded(fn (ClientRequest $request) => str_contains($request->url(), '/azampay/v1/public-key'))->count())->toBe(3);
+});
+
+it('only accepts callbacks from allowed addresses when a list is set', function () {
+    config()->set('azampay.callback.allowed_ips', ['203.0.113.10', '198.51.100.0/24']);
+
+    $payload = azampaySignedCallback($this->pair['private']);
+
+    postJson(route('checkout_payment_callback'), $payload)->assertStatus(403);
+    Event::assertNotDispatched(AzampayCallback::class);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.7']);
+    postJson(route('checkout_payment_callback'), $payload)->assertStatus(200);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10']);
+    postJson(route('checkout_payment_callback'), $payload)->assertStatus(200);
+});
+
+it('guards the disbursement callback with the allowed addresses and a custom verifier', function () {
+    config()->set('azampay.callback.enabled', false);
+    config()->set('azampay.callback.disbursement_enabled', true);
+    config()->set('azampay.callback.disbursement_path', '/hooks/azampay/transfers');
+
+    CallbackRoutes::register();
+
+    $payload = ['pgReferenceId' => 'pg-123', 'status' => 'success'];
+
+    config()->set('azampay.callback.allowed_ips', ['203.0.113.10']);
+    postJson('/hooks/azampay/transfers', $payload)->assertStatus(403);
+    Event::assertNotDispatched(AzampayDisbursementCallback::class);
+
+    config()->set('azampay.callback.allowed_ips', []);
+    config()->set('azampay.callback.verify', true);
+
+    // the built-in signature check does not apply to disbursement callbacks
+    postJson('/hooks/azampay/transfers', $payload)->assertStatus(200);
+
+    app()->bind(CallbackVerifier::class, fn () => new class implements CallbackVerifier
+    {
+        public function verify(Request $request): bool
+        {
+            return $request->header('X-Shared-Secret') === 'let-me-in';
+        }
+    });
+
+    postJson('/hooks/azampay/transfers', $payload)->assertStatus(403);
+    postJson('/hooks/azampay/transfers', $payload, ['X-Shared-Secret' => 'let-me-in'])->assertStatus(200);
+});

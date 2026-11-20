@@ -137,10 +137,14 @@ return [
         'path' => env('AZAMPAY_CALLBACK_PATH', '/api/v1/Checkout/Callback'),
         'middleware' => [],
 
+        // Only accept callbacks from these IP addresses or CIDR ranges. Empty allows any.
+        'allowed_ips' => array_filter(explode(',', (string) env('AZAMPAY_CALLBACK_ALLOWED_IPS', ''))),
+
         'verify' => (bool) env('AZAMPAY_VERIFY_CALLBACKS', false),
         'public_key' => env('AZAMPAY_CALLBACK_PUBLIC_KEY'),
         'public_key_path' => env('AZAMPAY_CALLBACK_PUBLIC_KEY_PATH', 'azampay/v1/public-key'),
         'public_key_cache_ttl' => (int) env('AZAMPAY_CALLBACK_PUBLIC_KEY_TTL', 86400),
+        'public_key_refresh_interval' => 300,
         'signature_fields' => ['utilityref', 'externalreference', 'transactionstatus', 'operator'],
 
         'disbursement_enabled' => (bool) env('AZAMPAY_DISBURSEMENT_CALLBACK_ENABLED', false),

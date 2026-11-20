@@ -24,13 +24,13 @@ class CallbackRoutes
 
         if ($config['enabled'] ?? true) {
             Route::post(self::path($config['path'] ?? null, self::CHECKOUT_PATH), [CallbackController::class, 'checkout'])
-                ->middleware(array_merge([VerifyAzampayCallback::class], $middleware))
+                ->middleware(array_merge([VerifyAzampayCallback::class.':checkout'], $middleware))
                 ->name('checkout_payment_callback');
         }
 
         if ($config['disbursement_enabled'] ?? false) {
             Route::post(self::path($config['disbursement_path'] ?? null, self::DISBURSEMENT_PATH), [CallbackController::class, 'disbursement'])
-                ->middleware($middleware)
+                ->middleware(array_merge([VerifyAzampayCallback::class.':disbursement'], $middleware))
                 ->name('azampay_disbursement_callback');
         }
     }

@@ -411,6 +411,7 @@ Set these in `config/azampay.php` under `callback`:
 | `enabled` | `true` | Register the checkout callback route |
 | `path` | `/api/v1/Checkout/Callback` | The route's path |
 | `middleware` | `[]` | Extra middleware for the callback routes, for example a rate limiter |
+| `allowed_ips` | `[]` | Only accept callbacks from these IP addresses or CIDR ranges |
 | `verify` | `false` | Verify the callback signature |
 | `signature_fields` | `utilityref`, `externalreference`, `transactionstatus`, `operator` | The fields the signature covers, in order |
 | `disbursement_enabled` | `false` | Register the disbursement callback route |
@@ -437,7 +438,12 @@ public function handle(AzampayDisbursementCallback $event)
 }
 ```
 
-Disbursement callbacks carry no signature, so always confirm the result with `transactionStatus()` before you release or refund money.
+Protect this route before you turn it on:
+
+- Always confirm the result with `transactionStatus()` before you release or refund money. Never act on the callback alone.
+- Limit who can call it with `AZAMPAY_CALLBACK_ALLOWED_IPS` (comma separated addresses or CIDR ranges), using the addresses AzamPay calls you from.
+- Set `AZAMPAY_DISBURSEMENT_CALLBACK_PATH` to a long random path and share it only with AzamPay.
+- With `AZAMPAY_VERIFY_CALLBACKS=true`, a `CallbackVerifier` you bind yourself is applied to this route too.
 
 ## Disbursement API
 

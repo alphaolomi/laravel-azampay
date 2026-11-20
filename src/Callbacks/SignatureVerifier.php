@@ -7,6 +7,7 @@ namespace Alphaolomi\Azampay\Callbacks;
 use Alphaolomi\Azampay\AzampayService;
 use Alphaolomi\Azampay\Contracts\CallbackVerifier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -41,7 +42,15 @@ class SignatureVerifier implements CallbackVerifier
                 return true;
             }
 
-            // AzamPay may have rotated its key: fetch it again once before rejecting.
+            // AzamPay may have rotated its key: fetch it again before rejecting, but
+            // not more than once per interval, so forged callbacks cannot make this
+            // application call AzamPay on every request.
+            $interval = max(1, (int) config('azampay.callback.public_key_refresh_interval', 300));
+
+            if (! Cache::add('azampay:callback-public-key:refreshed', true, $interval)) {
+                return false;
+            }
+
             return $this->matches($message, $signature, $this->service()->callbackPublicKey(true));
         } catch (Throwable $e) {
             report($e);
