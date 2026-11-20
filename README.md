@@ -23,15 +23,15 @@
 </div>
 
 
-Laravel Axampay provides an expressive, fluent interface to Azampay's payments services. It handles almost all of the boilerplate payments & billing 
+Laravel Azampay provides an expressive, fluent interface to Azampay's payments services. It handles almost all of the boilerplate payments & billing 
 so you don't have to.
  
 ## Installation
 
 ### Prerequisites
 
-- PHP 8.1+
-- Laravel v10+
+- PHP 8.2+
+- Laravel 10, 11, 12 or 13
 - Composer
 
 You can install the package via Composer:

@@ -26,7 +26,7 @@ it('can successful and send bank checkout request', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/bank/checkout' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->bankCheckout([
         'amount' => 1000,
@@ -53,7 +53,7 @@ it('can throw exception if bank checkout request return error', function () {
         AzampayService::SANDBOX_BASE_URL.'/azampay/bank/checkout' => Http::response($stub, 200),
     ]);
 
-    $azampay = new AzampayService();
+    $azampay = new AzampayService;
 
     $data = $azampay->bankCheckout([
         'amount' => 1000,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Alphaolomi\Azampay\Facades;
 
+use Alphaolomi\Azampay\AzampayService;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -24,6 +25,6 @@ class Azampay extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \Alphaolomi\Azampay\AzampayService::class;
+        return AzampayService::class;
     }
 }

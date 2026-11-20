@@ -9,5 +9,5 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
-    checkMissingIterableValueType: false
-
+    # config/azampay.php is the package's own config file; env() belongs there.
+    noEnvCallsOutsideOfConfig: false
