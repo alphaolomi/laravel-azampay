@@ -543,6 +543,21 @@ in this link [Azampay Documentation](https://developerdocs.azampay.co.tz/redoc).
 composer test
 ```
 
+## Versions and support
+
+| Package | Laravel | PHP | Status |
+|---|---|---|---|
+| 1.x | 10, 11, 12, 13 | 8.2 to 8.5 | Supported |
+| 0.x | 9, 10 | 8.1 | Ended |
+
+Releases follow [semantic versioning](https://semver.org): a major version drops a Laravel or PHP version or changes the public API, a minor version adds a Laravel version or a feature, a patch version only fixes. A new Laravel release is supported within 30 days.
+
+## Getting help
+
+- Questions and how-to: [Discussions, Q&A](https://github.com/alphaolomi/laravel-azampay/discussions/categories/q-a). Questions get an answer within a week.
+- Ideas and feature requests: [Discussions, Ideas](https://github.com/alphaolomi/laravel-azampay/discussions/categories/ideas).
+- Bugs: [open an issue](https://github.com/alphaolomi/laravel-azampay/issues/new/choose).
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

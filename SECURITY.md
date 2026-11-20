@@ -2,10 +2,13 @@
 
 ## Supported versions
 
-| Version | Supported |
-|---------|-----------|
-| 1.x     | Yes       |
-| 0.x     | No        |
+| Version | Laravel | PHP | Status |
+|---------|---------|-----|--------|
+| 1.x     | 10, 11, 12, 13 | 8.2 to 8.5 | Supported: features and fixes |
+| 0.x     | 9, 10 | 8.1 | Ended: no fixes |
+
+At most two major versions are supported at a time. When a new major version is
+released, the previous one receives security and critical fixes for six months.
 
 ## Reporting a vulnerability
 
