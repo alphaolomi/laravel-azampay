@@ -6,6 +6,7 @@ namespace Alphaolomi\Azampay;
 
 use Alphaolomi\Azampay\Traits\InputValidation;
 use Exception;
+use Alphaolomi\Azampay\Exceptions\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Response as HTTPResponse;
 use Illuminate\Support\Facades\Cache;
@@ -111,6 +112,43 @@ class AzampayService
             (array) config('azampay.disbursement', []),
             (int) config('azampay.timeout', 60)
         );
+    }
+
+    /**
+     * The public key AzamPay signs checkout callbacks with, in PEM format.
+     *
+     * It is kept in the cache; pass true to fetch it again.
+     *
+     * @throws RequestException
+     */
+    public function callbackPublicKey(bool $fresh = false): string
+    {
+        $cacheKey = 'azampay:callback-public-key:'.sha1($this->baseUrl);
+
+        if (! $fresh) {
+            $cached = Cache::get($cacheKey);
+
+            if (is_string($cached) && $cached !== '') {
+                return $cached;
+            }
+        }
+
+        $path = config('azampay.callback.public_key_path');
+        $path = is_string($path) && $path !== '' ? $path : 'azampay/v1/public-key';
+
+        $response = Http::withToken($this->accessToken())
+            ->acceptJson()
+            ->get($this->baseUrl.'/'.ltrim($path, '/'), ['format' => 'Pem']);
+
+        $publicKey = $response->json('publicKey');
+
+        if ($response->failed() || ! is_string($publicKey) || trim($publicKey) === '') {
+            throw new RequestException($response, 'Unable to retrieve the AzamPay callback public key.');
+        }
+
+        Cache::put($cacheKey, $publicKey, (int) config('azampay.callback.public_key_cache_ttl', 86400));
+
+        return $publicKey;
     }
 
     /**

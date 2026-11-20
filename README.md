@@ -372,6 +372,73 @@ protected $listen = [
 
 Now, whenever a callback is received from Azampay, the package will call the `handle` method of the `AzampayCallbackListener` class. with the callback data.
 
+### Verifying callbacks
+
+Your callback URL is public. Without a check, anyone who knows it can post a fake "payment succeeded". AzamPay signs each checkout callback, and the package can verify that signature for you:
+
+```bash
+AZAMPAY_VERIFY_CALLBACKS=true
+```
+
+With this on, a callback whose signature does not match AzamPay's public key gets a `403` response and no `AzampayCallback` event is dispatched. The public key is fetched from AzamPay, cached for a day, and fetched again if a signature stops matching.
+
+To pin the key yourself instead, set it as PEM contents or a file path:
+
+```bash
+AZAMPAY_CALLBACK_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+```
+
+Verification is off by default in 1.x and will be on by default in 2.0.
+
+Even with verification on, treat a callback as a signal and make your handler safe to run twice: look the order up by `utilityref`, check the amount, and only then mark it paid.
+
+#### Using your own check
+
+Bind your own `CallbackVerifier` to replace the signature check, for example with a shared secret or an IP allow-list:
+
+```php
+use Alphaolomi\Azampay\Contracts\CallbackVerifier;
+
+$this->app->bind(CallbackVerifier::class, MyCallbackVerifier::class);
+```
+
+### Callback route options
+
+Set these in `config/azampay.php` under `callback`:
+
+| Key | Default | What it does |
+|---|---|---|
+| `enabled` | `true` | Register the checkout callback route |
+| `path` | `/api/v1/Checkout/Callback` | The route's path |
+| `middleware` | `[]` | Extra middleware for the callback routes, for example a rate limiter |
+| `verify` | `false` | Verify the callback signature |
+| `signature_fields` | `utilityref`, `externalreference`, `transactionstatus`, `operator` | The fields the signature covers, in order |
+| `disbursement_enabled` | `false` | Register the disbursement callback route |
+| `disbursement_path` | `/api/v1/Disbursement/Callback` | Its path |
+
+### Disbursement callback
+
+AzamPay can call you with the result of a transfer. Turn the route on, give AzamPay its URL, and listen for the event:
+
+```bash
+AZAMPAY_DISBURSEMENT_CALLBACK_ENABLED=true
+```
+
+```php
+use Alphaolomi\Azampay\Events\AzampayDisbursementCallback;
+
+public function handle(AzampayDisbursementCallback $event)
+{
+    $pgReferenceId = $event->data['pgReferenceId'];
+    $status = $event->data['status']; // "success" or "failure"
+
+    // Confirm before you act on it
+    $confirmed = Azampay::disbursement()->transactionStatus($pgReferenceId, $bankName);
+}
+```
+
+Disbursement callbacks carry no signature, so always confirm the result with `transactionStatus()` before you release or refund money.
+
 ## Disbursement API
 
 Send money from your AzamPay account to a mobile wallet, with the transfer checksum AzamPay requires.
