@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Alphaolomi\Azampay\AzampayService createTransfer(array $payload)
  * @method static \Alphaolomi\Azampay\AzampayService nameLookup(array $payload)
  * @method static \Alphaolomi\Azampay\AzampayService getTransactionStatus(?array $payload)
+ * @method static \Alphaolomi\Azampay\Disbursement disbursement()
+ * @method static void forgetToken()
  *
  * @author Alpha Olomi and Michael Omakei
  *
