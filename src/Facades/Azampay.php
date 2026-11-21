@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Alphaolomi\Azampay\AzampayService getTransactionStatus(?array $payload)
  * @method static \Alphaolomi\Azampay\Disbursement disbursement()
  * @method static void forgetToken()
+ * @method static string callbackPublicKey(bool $fresh = false)
  *
  * @author Alpha Olomi and Michael Omakei
  *
