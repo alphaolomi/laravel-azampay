@@ -2,6 +2,56 @@
 
 All notable changes to `laravel-azampay` will be documented in this file.
 
+## v1.2.0 - 2026-11-21
+
+Send money out as well as take it in. This release adds a disbursement client, lets you verify that a callback really comes from AzamPay, and stops the package asking for a new access token on every request.
+
+### What this means for you
+
+- **You can pay out.** `Azampay::disbursement()` looks up a wallet owner, sends a transfer with the checksum AzamPay requires, and checks a transfer's status.
+- **You can trust your callbacks.** Turn on signature verification and a forged "payment succeeded" is rejected before your code sees it.
+- **Fewer calls to AzamPay.** The access token is cached and renewed when it expires.
+- **You can test against your own server.** Every AzamPay host and disbursement path can be pointed elsewhere, for example at a local simulator.
+
+### What you need to do
+
+```bash
+composer require alphaolomi/laravel-azampay:^1.2
+
+```
+Nothing breaks. Existing methods, the callback route and the callback event work as before.
+
+To use the new features:
+
+- **Payouts:** add the disbursement settings to `.env` (public key, source account). See "Disbursement API" in the README.
+- **Callback verification:** set `AZAMPAY_VERIFY_CALLBACKS=true`. It is off by default in 1.x and will be on by default in 2.0.
+- **Published config:** if you published `config/azampay.php` before this release, publish it again or copy the new `urls`, `token_cache_ttl`, `timeout`, `disbursement` and `callback` keys.
+
+One behaviour to know about: the access token is now kept in your application cache for up to 55 minutes. Set `AZAMPAY_TOKEN_CACHE_TTL=0` if you want a new token on every request, as before.
+
+### Moving off the old transfer methods
+
+`createTransfer()`, `nameLookup()` and `getTransactionStatus()` still work but are deprecated and will be removed in 2.0. Use `Azampay::disbursement()->disburse()`, `->nameLookup()` and `->transactionStatus()` instead.
+
+### Supported versions
+
+| Package | Laravel | PHP | Status |
+|---|---|---|---|
+| 1.x | 10, 11, 12, 13 | 8.2 to 8.5 | Supported |
+| 0.x | 9, 10 | 8.1 | Ended |
+
+### Technical changes
+
+- Disbursement client: `nameLookup()`, `disburse()`, `transactionStatus()`; transfer checksum; argument validation before sending; typed exceptions (`ValidationException`, `ConfigurationException`, `AuthenticationException`, `RequestException`) (#58)
+- Configurable base URLs (`azampay.urls`) and disbursement paths (`azampay.disbursement.paths`) (#58)
+- Access token cache with expiry-aware renewal; `forgetToken()` (#58)
+- `VerifyAzampayCallback` middleware, `CallbackVerifier` contract, public key fetch with caching and rate-limited refresh (#60)
+- Callback route options: `enabled`, `path`, `middleware`, `allowed_ips` (#60)
+- Opt-in disbursement callback route and `AzampayDisbursementCallback` event (#60)
+- GitHub Actions updates (#54)
+
+**Full changelog**: https://github.com/alphaolomi/laravel-azampay/compare/v1.1.0...v1.2.0
+
 ## v1.1.0 - 2026-11-20
 
 The first release since v1.0.0. It brings the package up to date with Laravel and fixes a callback problem that affected real payments.
@@ -16,6 +66,7 @@ The first release since v1.0.0. It brings the package up to date with Laravel an
 
 ```bash
 composer require alphaolomi/laravel-azampay:^1.1
+
 
 ```
 No code changes are needed. No public method changed. If you are on PHP 8.1, upgrade PHP first or stay on v1.0.0.
