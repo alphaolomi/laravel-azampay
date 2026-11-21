@@ -58,6 +58,25 @@ AZAMPAY_ENVIRONMENT="sandbox"
 AZAMPAY_TOKEN="Your_Token"
 ```
 
+Optional settings:
+
+```bash
+# Keep the access token in your cache for this many seconds (default 3300, 0 turns it off)
+AZAMPAY_TOKEN_CACHE_TTL=3300
+
+# Point the package at other hosts, for example a local simulator
+AZAMPAY_AUTH_URL=
+AZAMPAY_CHECKOUT_URL=
+AZAMPAY_DISBURSEMENT_URL=
+
+# Change a disbursement endpoint path (relative to the disbursement URL)
+AZAMPAY_NAME_LOOKUP_PATH=
+AZAMPAY_DISBURSE_PATH=
+AZAMPAY_TRANSACTION_STATUS_PATH=
+```
+
+The access token is cached and reused across requests, and renewed when it expires. Call `Azampay::forgetToken()` to drop it early.
+
 ## Usage
 
 ## Checkout API
@@ -354,6 +373,90 @@ protected $listen = [
 Now, whenever a callback is received from Azampay, the package will call the `handle` method of the `AzampayCallbackListener` class. with the callback data.
 
 ## Disbursement API
+
+Send money from your AzamPay account to a mobile wallet, with the transfer checksum AzamPay requires.
+
+### Setup
+
+AzamPay issues a public key for the checksum and tells you your source account. Add them to `.env`:
+
+```bash
+AZAMPAY_DISBURSEMENT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+AZAMPAY_SOURCE_ACCOUNT="your_source_account"
+AZAMPAY_SOURCE_NAME="Your Registered Business Name"
+AZAMPAY_SOURCE_BANK="Azampesa"
+```
+
+`AZAMPAY_DISBURSEMENT_PUBLIC_KEY` can also be a path to a PEM file. If you published the config file before v1.2.0, publish it again or add the `urls`, `token_cache_ttl`, `timeout` and `disbursement` keys from the package's `config/azampay.php`.
+
+### Look up a name
+
+Check who owns the wallet before you pay it.
+
+```php
+use Alphaolomi\Azampay\Facades\Azampay;
+
+$owner = Azampay::disbursement()->nameLookup('tigo', '255700000001');
+
+// ['name' => 'JOHN DOE', 'fName' => 'JOHN', 'lName' => 'DOE', 'status' => true, ...]
+```
+
+### Send a transfer
+
+```php
+$transfer = Azampay::disbursement()->disburse(
+    destination: [
+        'accountNumber' => '255700000001',
+        'fullName' => 'John Doe',
+        'bankName' => 'tigo',
+    ],
+    amount: 15000,
+    externalReferenceId: 'WD20261121000001',
+    options: ['remarks' => 'Wallet withdrawal'],
+);
+
+// ['pgReferenceId' => '...', 'message' => 'Your transaction is in process', 'success' => true, 'statusCode' => 200]
+```
+
+- `amount` is a whole number in TZS.
+- `externalReferenceId` is your own unique reference: letters and digits only, at most 30 characters. AzamPay rejects a reference it has seen before, which protects you from paying twice.
+- A successful response means AzamPay accepted the transfer, not that the money has arrived. Store `pgReferenceId` and confirm the outcome with the status call below or the disbursement callback AzamPay sends you.
+- Record the transfer as pending in your own database before you call `disburse()`, so a timeout never leaves you unsure whether money moved.
+
+### Check a transfer
+
+```php
+$status = Azampay::disbursement()->transactionStatus($transfer['pgReferenceId'], 'tigo');
+```
+
+### Errors
+
+The disbursement client throws instead of returning error arrays:
+
+| Exception | When |
+|---|---|
+| `Exceptions\ValidationException` | The amount, reference or destination is invalid. Nothing was sent. |
+| `Exceptions\ConfigurationException` | The public key or source account is missing or invalid. Nothing was sent. |
+| `Exceptions\AuthenticationException` | AzamPay rejected the access token (HTTP 401). |
+| `Exceptions\RequestException` | AzamPay answered with any other error. `$e->status()` and `$e->json()` hold the details. |
+
+All of them extend `Exceptions\AzampayException`.
+
+```php
+use Alphaolomi\Azampay\Exceptions\RequestException;
+
+try {
+    $transfer = Azampay::disbursement()->disburse($destination, 15000, $reference);
+} catch (RequestException $e) {
+    // 400 invalid bank name, 402 request expired, 403 duplicate reference
+    report($e);
+}
+```
+
+### Older methods
+
+`createTransfer()`, `nameLookup()` and `getTransactionStatus()` on the facade still work but are deprecated. They send no checksum. Move to `Azampay::disbursement()`; they will be removed in 2.0.
+
 
 ### Create transfer
 

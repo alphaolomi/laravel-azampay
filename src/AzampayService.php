@@ -8,6 +8,7 @@ use Alphaolomi\Azampay\Traits\InputValidation;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Response as HTTPResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class AzampayService
@@ -22,6 +23,10 @@ class AzampayService
 
     const BASE_URL = 'https://checkout.azampay.co.tz';
 
+    const SANDBOX_DISBURSEMENT_BASE_URL = 'https://api-disbursement-sandbox.azampay.co.tz';
+
+    const DISBURSEMENT_BASE_URL = 'https://api-disbursement.azampay.co.tz';
+
     const SUPPORTED_MNO = ['Airtel', 'Tigo', 'Halopesa', 'Azampesa'];
 
     const SUPPORTED_BANK = ['CRDB', 'NMB'];
@@ -31,6 +36,8 @@ class AzampayService
     private string $baseUrl;
 
     private string $authBaseUrl;
+
+    private string $disbursementBaseUrl;
 
     /**
      * @deprecated use $token instead
@@ -61,10 +68,74 @@ class AzampayService
             throw new \InvalidArgumentException('Missing required option: clientSecret');
         }
 
-        $this->baseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_BASE_URL : self::BASE_URL;
-        $this->authBaseUrl = config('azampay.environment') === 'sandbox' ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL;
+        $sandbox = config('azampay.environment') === 'sandbox';
 
-        $this->generateToken();
+        // Each base URL can be overridden, for example to point at a local simulator.
+        $this->baseUrl = $this->baseUrlFor('checkout', $sandbox ? self::SANDBOX_BASE_URL : self::BASE_URL);
+        $this->authBaseUrl = $this->baseUrlFor('auth', $sandbox ? self::SANDBOX_AUTH_BASE_URL : self::AUTH_BASE_URL);
+        $this->disbursementBaseUrl = $this->baseUrlFor('disbursement', $sandbox ? self::SANDBOX_DISBURSEMENT_BASE_URL : self::DISBURSEMENT_BASE_URL);
+
+        $this->accessToken();
+    }
+
+    /**
+     * The access token to send with a request.
+     *
+     * With the token cache on, the token is read from the cache every time and
+     * renewed when it has expired, so a long-running worker never keeps a stale one.
+     */
+    private function accessToken(): string
+    {
+        $caching = $this->tokenCacheTtl() > 0;
+        $cached = $caching ? Cache::get($this->tokenCacheKey()) : null;
+
+        if (is_string($cached) && $cached !== '') {
+            return $this->token = $cached;
+        }
+
+        if ($caching || ! isset($this->token)) {
+            $this->generateToken();
+        }
+
+        return $this->token;
+    }
+
+    /**
+     * The disbursement API: name lookup, transfers and transfer status.
+     */
+    public function disbursement(): Disbursement
+    {
+        return new Disbursement(
+            $this->disbursementBaseUrl,
+            $this->accessToken(),
+            (array) config('azampay.disbursement', []),
+            (int) config('azampay.timeout', 60)
+        );
+    }
+
+    /**
+     * Forget the cached access token, so the next instance requests a new one.
+     */
+    public function forgetToken(): void
+    {
+        Cache::forget($this->tokenCacheKey());
+    }
+
+    private function baseUrlFor(string $name, string $default): string
+    {
+        $configured = config("azampay.urls.{$name}");
+
+        return rtrim(is_string($configured) && $configured !== '' ? $configured : $default, '/');
+    }
+
+    private function tokenCacheTtl(): int
+    {
+        return (int) config('azampay.token_cache_ttl', 0);
+    }
+
+    private function tokenCacheKey(): string
+    {
+        return 'azampay:token:'.sha1($this->authBaseUrl.'|'.config('azampay.appName').'|'.config('azampay.clientId'));
     }
 
     /**
@@ -94,6 +165,19 @@ class AzampayService
         });
 
         $this->token = $response->json('data')['accessToken'];
+
+        $ttl = $this->tokenCacheTtl();
+
+        if ($ttl > 0) {
+            // Never keep a token past the expiry AzamPay reports for it.
+            $expire = strtotime((string) $response->json('data.expire'));
+
+            if ($expire !== false && $expire - 60 > time()) {
+                $ttl = min($ttl, $expire - 60 - time());
+            }
+
+            Cache::put($this->tokenCacheKey(), $this->token, $ttl);
+        }
     }
 
     /**
@@ -280,6 +364,8 @@ class AzampayService
      *                    statusCode: 200
      *                    }|null
      *
+     * @deprecated 1.2.0 Sends no checksum. Use disbursement()->disburse() instead.
+     *
      * @throws Exception
      */
     public function createTransfer(array $data): ?array
@@ -309,6 +395,8 @@ class AzampayService
      *                    bankName: string
      *                    }|null
      *
+     * @deprecated 1.2.0 Use disbursement()->nameLookup() instead.
+     *
      * @throws Exception
      */
     public function nameLookup(array $data): ?array
@@ -336,6 +424,8 @@ class AzampayService
      *                    statusCode": 200
      *                    }|null
      *
+     * @deprecated 1.2.0 Use disbursement()->transactionStatus() instead.
+     *
      * @throws Exception
      */
     public function getTransactionStatus(?array $data = null): ?array
@@ -355,7 +445,7 @@ class AzampayService
      */
     private function sendRequest(string $method, string $uri, array $data): Response
     {
-        return Http::withToken($this->token)
+        return Http::withToken($this->accessToken())
             ->withHeaders([
                 'Content-Type' => 'application/json',
             ])->$method($this->baseUrl.$uri, $data);
@@ -366,7 +456,7 @@ class AzampayService
      */
     private function sendDisbursementRequest(string $method, string $uri, ?array $data = null): Response
     {
-        return Http::withToken($this->token)
+        return Http::withToken($this->accessToken())
             ->withHeaders([
                 'Content-Type' => 'application/json',
             ])->$method($this->baseUrl.$uri, $data);
